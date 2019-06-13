@@ -1,0 +1,19 @@
+<div class="fullheight">
+  <div class="leaderboard fullheight">
+    <h3>Your Achievements</h3>
+    <ul class="achievement leaderboard-achievement">
+      <li *ngFor="let achievement of gameService.achievements" [ngClass]="achievement.type">
+        <i class="material-icons" *ngIf="achievement.type !== 'golden'">{{gameService.achievementIconsHash[achievement.type]}}</i>
+        <img class="golden-balloon" src="app/+game/assets/golden.png" *ngIf="achievement.type === 'golden'">
+        <div class="legend">
+          <div><strong>{{achievement.desc}}</strong></div>
+          {{achievement.text}}
+        </div>
+      </li>
+    </ul>
+
+    <div class="no-achievements" *ngIf="!gameService.achievements.length">
+      No achievements yet!
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["index.ts"],"names":[],"mappings":";AAAA,4BAA0B,eAAe,CAAC;AAAlC,gDAAkC;AAC1C,0CAAwC,6BAA6B,CAAC;AAA9D,0FAA8D","sourcesContent":["export {environment} from './environment';\nexport {RhKeynoteDemoAppComponent} from './rh-keynote-demo.component';\n"]}

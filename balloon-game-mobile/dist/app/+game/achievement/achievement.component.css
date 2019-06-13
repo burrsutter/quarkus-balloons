@@ -1,0 +1,57 @@
+.standalone :host {
+  bottom: 36px; }
+
+:host {
+  box-sizing: border-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  background-color: #002235;
+  color: white;
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  margin: auto;
+  max-width: 300px;
+  height: 48px;
+  border-radius: 48px;
+  pointer-events: none;
+  transition: opacity 200ms ease-in-out;
+  opacity: 0; }
+  :host.visible {
+    opacity: 1;
+    -webkit-animation-name: bouncy;
+    animation-name: bouncy;
+    -webkit-animation-duration: 0.35s;
+    animation-duration: 0.35s; }
+  :host .achievement__icon {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    background-color: #002a42;
+    width: 32px;
+    height: 32px;
+    border-radius: 32px;
+    margin-right: 8px;
+    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
+    color: yellow; }
+
+@keyframes bouncy {
+  0% {
+    -webkit-transform: scale(0.75);
+    transform: scale(0.75);
+    opacity: 0; }
+  50% {
+    -webkit-transform: scale(1.2);
+    transform: scale(1.2); }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    opacity: 1; } }

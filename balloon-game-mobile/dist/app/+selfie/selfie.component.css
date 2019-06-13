@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  height: 100%; }
+
+#canvasContainer {
+  display: -webkit-flex;
+  diplay: flex;
+  -webkit-justify-content: center;
+  justify-content: center; }
+
+.upload-success {
+  line-height: 30px;
+  display: flex; }
+  .upload-success strong {
+    font-size: 30px;
+    color: #f7bd7f;
+    padding: 0 4px; }
+
+.controls {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center; }

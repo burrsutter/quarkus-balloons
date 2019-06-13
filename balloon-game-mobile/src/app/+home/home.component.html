@@ -1,0 +1,11 @@
+<div class="main">
+  <a [routerLink]="['/game']" class="mdl-button mdl-js-button app-icon">
+    <i class="material-icons">videogame_asset</i>
+      <span>Play Game</span>
+  </a>
+
+  <a [routerLink]="['/playerid']" class="mdl-button mdl-js-button app-icon" *ngIf="gameService.currentSelfieState === 'open'">
+    <i class="material-icons">photo</i>
+      <span>Player ID</span>
+  </a>
+</div>

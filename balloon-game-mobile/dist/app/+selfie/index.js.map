@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["index.ts"],"names":[],"mappings":";AAAA,iCAAgC,oBAAoB,CAAC;AAA5C,6DAA4C","sourcesContent":["export { SelfieComponent } from './selfie.component';\n"]}
