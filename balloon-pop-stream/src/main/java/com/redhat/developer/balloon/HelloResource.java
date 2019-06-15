@@ -46,7 +46,11 @@ public class HelloResource {
     @Path("/stream")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public Publisher<String> stream() {
-      return stream.buildRs();
+      return stream
+      .map(item -> Json.createReader(new StringReader(item)).readObject())
+      .peek(s -> System.out.println("Received: " + s))
+      .map(JsonValue::toString)    
+      .buildRs();
     }
 
     @GET
@@ -56,7 +60,8 @@ public class HelloResource {
       return stream
         .map(item -> Json.createReader(new StringReader(item)).readObject())
         .filter(json -> json.getString("balloonType").equals("balloon_yellow"))
-        .map(JsonValue::toString)
+        .peek(s -> System.out.println("Received: " + s))
+        .map(JsonValue::toString)        
         .buildRs();
     }
 
