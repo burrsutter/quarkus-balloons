@@ -61,6 +61,7 @@ public class BonusProcessor {
       .add("description","Red Bonus").build();  
 
       bonusstream.send(playerBonusObject.toString());
+      
       System.out.println("** Red Bonus");
     }
   

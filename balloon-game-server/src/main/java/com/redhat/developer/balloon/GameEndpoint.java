@@ -124,7 +124,7 @@ public class GameEndpoint {
   
   // broadcast a message to all connected clients
   public void broadcast(String message) {
-    sessions.values().forEach(session -> {
+    playerSessions.values().forEach(session -> {
       session.getAsyncRemote().sendObject(message, result ->  {
           if (result.getException() != null) {
               LOG.error("Unable to send message: " + result.getException());
@@ -132,7 +132,7 @@ public class GameEndpoint {
       });
     });
     // send the message twice, helps with some clients being semi-connected
-    sessions.values().forEach(session -> {
+    playerSessions.values().forEach(session -> {
       session.getAsyncRemote().sendObject(message, result ->  {
           if (result.getException() != null) {
               LOG.error("Unable to send message: " + result.getException());
@@ -144,7 +144,7 @@ public class GameEndpoint {
 
   // send a message to a single client
   public void sendOnePlayer(String id, String message) {
-    Session oneSession = sessions.get(id);
+    Session oneSession = playerSessions.get(id);
     oneSession.getAsyncRemote().sendObject(message, result ->  {
       if (result.getException() != null) {
           LOG.error("Unable to send message: " + result.getException());
@@ -216,9 +216,13 @@ public class GameEndpoint {
   Listen for bonus  
   */
   @Incoming("bonusstream")
-  public CompletionStage<Void> process(KafkaMessage<String,String> msg) {
-      // LOG.info("\n!!!BONUSSTREAM!!! " + msg.getPayload());
-      JsonReader jsonReader = Json.createReader(new StringReader(msg.getPayload()));
+  // public CompletionStage<Void> process(KafkaMessage<String,String> msg) {
+    public void process(String message) {
+      
+      String msg = message;
+      LOG.info("\n!!!BONUSSTREAM!!! " + msg);
+
+      JsonReader jsonReader = Json.createReader(new StringReader(msg));
       JsonObject jsonMessage = jsonReader.readObject();   
       String achievement = jsonMessage.getString("achievement");
       String playerId = jsonMessage.getString("playerId");
@@ -240,7 +244,7 @@ public class GameEndpoint {
         
         LOG.info(allAcheivements.toString());
 
-        /* Causes an error
+        /* Causes an error 
         Session s = playerSessions.get(playerId);
         s.getAsyncRemote().sendObject(allAcheivements.toString(), result ->  {
           if (result.getException() != null) {
@@ -249,7 +253,7 @@ public class GameEndpoint {
         });
         */
       }
-      return msg.ack();
+      // return msg.ack();
   }
 
   /*
