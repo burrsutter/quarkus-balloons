@@ -6,10 +6,10 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import org.jboss.logging.Logger;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.io.StringReader;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.*;
@@ -18,17 +18,21 @@ import javax.ws.rs.core.Response;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-// import javax.json.JsonValue;
+import javax.json.JsonArray;
 import javax.json.JsonReader;
 
 import io.smallrye.reactive.messaging.annotations.Emitter;
 import io.smallrye.reactive.messaging.annotations.Stream;
 
+import org.eclipse.microprofile.reactive.messaging.Incoming;
+import io.smallrye.reactive.messaging.kafka.KafkaMessage;
+import java.util.concurrent.CompletionStage;
+
 
 @ServerEndpoint("/game") // for the mobile game
 @Path("/142sjer43") // for the administration
 @ApplicationScoped
-public class Endpoint {
+public class GameEndpoint {
   private static final Logger LOG = Logger.getLogger(Endpoint.class);
   private static final String STARTGAME = "start-game";
   private static final String PLAY = "play";
@@ -42,7 +46,7 @@ public class Endpoint {
   Map<String, Session> sessions = new ConcurrentHashMap<>();
 
   // playerMap
-  Map<String, JsonObject> players = new ConcurrentHashMap<>();
+  Map<String, Session> playerSessions = new ConcurrentHashMap<>();
 
   @Inject @Stream("popstream")
   Emitter<String> emitter;
@@ -105,10 +109,9 @@ public class Endpoint {
   public void onMessage(String message, Session session) {      
       JsonReader jsonReader = Json.createReader(new StringReader(message));
       JsonObject jsonMessage = jsonReader.readObject();      
-      LOG.info("jsonMessage: " + jsonMessage);
+      // LOG.info("jsonMessage: " + jsonMessage);
       String msgtype = jsonMessage.getString("type");
-      LOG.info("msgtype: " + msgtype);
-
+      // LOG.info("msgtype: " + msgtype);
       if (msgtype != null && !msgtype.equals("")) {
         if(msgtype.equals("register")) {
           register(jsonMessage, session);
@@ -140,14 +143,14 @@ public class Endpoint {
   } // broadcast
 
   // send a message to a single client
-  public void send(String id, String message) {
+  public void sendOnePlayer(String id, String message) {
     Session oneSession = sessions.get(id);
     oneSession.getAsyncRemote().sendObject(message, result ->  {
       if (result.getException() != null) {
           LOG.error("Unable to send message: " + result.getException());
       }
     });
-  } // send
+  } // sendOnePlayer
 
   /*
     Mobile/Client/Game requests
@@ -161,11 +164,11 @@ public class Endpoint {
     LOG.info("playerId: " + playerId);
     LOG.info("username: " + username);
     LOG.info("teamNumber: " + teamNumber);
-    JsonObject playerObject = Json.createObjectBuilder()
-    .add("playerId", playerId)
-    .add("username", username)
-    .add("teamNumber", teamNumber).build();
-    players.put(playerId,playerObject);
+    // JsonObject playerObject = Json.createObjectBuilder()
+    // .add("playerId", playerId)
+    // .add("username", username)
+    // .add("teamNumber", teamNumber).build();
+    playerSessions.put(playerId,session);
 
     /* 
     client needs 3 messages: id, configuration, game state     
@@ -177,7 +180,7 @@ public class Endpoint {
 
     LOG.info("idResponse: " + idResponse.toString());
 
-    send(session.getId(),idResponse.toString());
+    sendOnePlayer(session.getId(),idResponse.toString());
 
     JsonObject configurationResponse = Json.createObjectBuilder()
     .add("score",0)
@@ -187,16 +190,16 @@ public class Endpoint {
     .add("type","configuration")
     .add("configuration",currentGameConfiguration).build();
 
-    send(session.getId(),configurationResponse.toString());
+    sendOnePlayer(session.getId(),configurationResponse.toString());
     
     if(currentGameState.equals(STARTGAME)) {
-      send(session.getId(),startGameMsg.toString());
+      sendOnePlayer(session.getId(),startGameMsg.toString());
     } else if(currentGameState.equals(PLAY)) {
-      send(session.getId(),playGameMsg.toString());
+      sendOnePlayer(session.getId(),playGameMsg.toString());
     } else if(currentGameState.equals(PAUSE)) {
-      send(session.getId(),pauseGameMsg.toString());
+      sendOnePlayer(session.getId(),pauseGameMsg.toString());
     } else if(currentGameState.equals(GAMEOVER)) {
-      send(session.getId(),gameOverMsg.toString());
+      sendOnePlayer(session.getId(),gameOverMsg.toString());
     }
 
   }
@@ -205,8 +208,48 @@ public class Endpoint {
    With each balloon pop
   */
   public void score(JsonObject jsonMessage) {
-    LOG.info("POP: " + jsonMessage.getString("balloonType"));
+    // LOG.info("POP: " + jsonMessage.getString("balloonType"));    
     emitter.send(jsonMessage.toString());
+  }
+
+  /* 
+  Listen for bonus  
+  */
+  @Incoming("bonusstream")
+  public CompletionStage<Void> process(KafkaMessage<String,String> msg) {
+      // LOG.info("\n!!!BONUSSTREAM!!! " + msg.getPayload());
+      JsonReader jsonReader = Json.createReader(new StringReader(msg.getPayload()));
+      JsonObject jsonMessage = jsonReader.readObject();   
+      String achievement = jsonMessage.getString("achievement");
+      String playerId = jsonMessage.getString("playerId");
+      String description = jsonMessage.getString("description");
+      int bonus = jsonMessage.getInt("bonus");
+
+      if (achievement != null && !achievement.trim().equals("")) {
+        LOG.info("!!! Achievement !!! " + achievement + " for: " + playerId + " value: " + bonus);
+        JsonArray achievements = Json.createArrayBuilder()
+          .add(Json.createObjectBuilder()
+          .add("type",achievement)
+          .add("description",description)
+          .add("bonus",bonus)).build();
+    
+        JsonObject allAcheivements = Json.createObjectBuilder()
+          .add("type","achievements")
+          .add("achievements",achievements)
+          .build();
+        
+        LOG.info(allAcheivements.toString());
+
+        /* Causes an error
+        Session s = playerSessions.get(playerId);
+        s.getAsyncRemote().sendObject(allAcheivements.toString(), result ->  {
+          if (result.getException() != null) {
+              LOG.error("Unable to send message: " + result.getException());
+          }
+        });
+        */
+      }
+      return msg.ack();
   }
 
   /*
@@ -254,6 +297,55 @@ public class Endpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response config(){
     return Response.ok(currentGameConfiguration).status(200).build();
+  }
+
+  @GET
+  @Path("/achieve")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response achievement(){
+    // There can be multiple achievements so send them all, per player
+    JsonArray achievements = Json.createArrayBuilder()
+    .add(Json.createObjectBuilder()
+      .add("type","pops1")
+      .add("description","1 in a row!")
+      .add("bonus",10))
+    .add(Json.createObjectBuilder()
+      .add("type","pops2")
+      .add("description","2 in a row!")
+      .add("bonus",20))
+    .add(Json.createObjectBuilder()
+      .add("type","pops3")
+      .add("description","3 in a row!")
+      .add("bonus",30))
+    .add(Json.createObjectBuilder()
+      .add("type","score1")
+      .add("description","Level 1")
+      .add("bonus",100))
+    .add(Json.createObjectBuilder()
+      .add("type","score2")
+      .add("description","Level 2")
+      .add("bonus",200))
+    .add(Json.createObjectBuilder()
+      .add("type","score3")
+      .add("description","Level 3")
+      .add("bonus",300))
+    .add(Json.createObjectBuilder()
+      .add("type","golden")
+      .add("description","Solid Gold")
+      .add("bonus",1000))
+
+    .build();
+
+
+    JsonObject allAcheivements = Json.createObjectBuilder()
+    .add("type","achievements")
+    .add("achievements",achievements)
+    .build();
+
+    // for testing purposes, sending all players
+    broadcast(allAcheivements.toString());
+    
+    return Response.ok(allAcheivements).status(200).build();
   }
 
   @GET

@@ -88,9 +88,8 @@ export class GameService {
 
   incrementPlayerScore(score: number) {
     this.playerScore += score;
-    localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
-    // BURR
-    // console.log("incrementPlayerScore");
+    localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));    
+    
     this.sendMessage({
       type: 'score',
       score: this.playerScore,
@@ -154,10 +153,15 @@ export class GameService {
     } else {
       achievement.desc = achievement.description;
     }
-
+    
     this.achievements.push(achievement);
     localStorage.setItem(this._achievementsKey, JSON.stringify(this.achievements));
     this.achievementsChange.emit(achievement);
+
+    console.log("Achievement Bonus! " + achievement.bonus);
+    this.playerScore = this.playerScore + achievement.bonus;
+    localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
+    
   }
 
   private onOpen(evt) {
@@ -191,7 +195,7 @@ export class GameService {
 
   private onMessage(evt) {
     const data = JSON.parse(evt.data);
-    console.log("onMessage: " + evt.data);
+    // console.log("onMessage: " + evt.data);
 
     if (data.type === 'state') {
       this.currentState = data.state;

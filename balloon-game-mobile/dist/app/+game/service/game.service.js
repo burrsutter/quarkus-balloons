@@ -87,8 +87,6 @@ var GameService = (function () {
     GameService.prototype.incrementPlayerScore = function (score) {
         this.playerScore += score;
         localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
-        // BURR
-        // console.log("incrementPlayerScore");
         this.sendMessage({
             type: 'score',
             score: this.playerScore,
@@ -148,6 +146,9 @@ var GameService = (function () {
         this.achievements.push(achievement);
         localStorage.setItem(this._achievementsKey, JSON.stringify(this.achievements));
         this.achievementsChange.emit(achievement);
+        console.log("Achievement Bonus! " + achievement.bonus);
+        this.playerScore = this.playerScore + achievement.bonus;
+        localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
     };
     GameService.prototype.onOpen = function (evt) {
         this.socketClosed = false;
@@ -176,7 +177,7 @@ var GameService = (function () {
     GameService.prototype.onMessage = function (evt) {
         var _this = this;
         var data = JSON.parse(evt.data);
-        console.log("onMessage: " + evt.data);
+        // console.log("onMessage: " + evt.data);
         if (data.type === 'state') {
             this.currentState = data.state;
             this.stateChange.emit({

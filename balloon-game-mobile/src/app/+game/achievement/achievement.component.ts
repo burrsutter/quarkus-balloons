@@ -25,6 +25,7 @@ export class AchievementComponent {
 
   achievementChangeHandler(achievement) {
     this.achievements.push(achievement);
+    console.log("BURRY: " + achievement.bonus);
     this.showAchievement();
   }
 

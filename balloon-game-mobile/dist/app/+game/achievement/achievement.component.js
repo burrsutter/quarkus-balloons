@@ -25,6 +25,7 @@ var AchievementComponent = (function () {
     }
     AchievementComponent.prototype.achievementChangeHandler = function (achievement) {
         this.achievements.push(achievement);
+        console.log("BURRY: " + achievement.bonus);
         this.showAchievement();
     };
     AchievementComponent.prototype.showAchievement = function () {

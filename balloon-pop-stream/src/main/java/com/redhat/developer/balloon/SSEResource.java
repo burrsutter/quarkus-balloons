@@ -22,9 +22,9 @@ import javax.json.JsonReader;
 import java.io.StringReader;
 
 
-@Path("/hello")
-public class HelloResource {
-    private static final Logger LOG = Logger.getLogger(HelloResource.class);
+@Path("/sse")
+public class SSEResource {
+    private static final Logger LOG = Logger.getLogger(SSEResource.class);
 
 
     @GET
@@ -40,15 +40,15 @@ public class HelloResource {
         return msg.ack();
     }
     */
-    @Inject @Stream("popstream") PublisherBuilder<String> stream;
-
+    @Inject @Stream("popstream") PublisherBuilder<String> popstream;
+    
     @GET
     @Path("/stream")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public Publisher<String> stream() {
-      return stream
+      return popstream
       .map(item -> Json.createReader(new StringReader(item)).readObject())
-      .peek(s -> System.out.println("Received: " + s))
+      // .peek(s -> System.out.println("Received: " + s))
       .map(JsonValue::toString)    
       .buildRs();
     }
@@ -57,12 +57,20 @@ public class HelloResource {
     @Path("/streamfilter")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public Publisher<String> streamfilter() {
-      return stream
+      return popstream
         .map(item -> Json.createReader(new StringReader(item)).readObject())
         .filter(json -> json.getString("balloonType").equals("balloon_yellow"))
-        .peek(s -> System.out.println("Received: " + s))
+        // .peek(s -> System.out.println("Received: " + s))
         .map(JsonValue::toString)        
         .buildRs();
     }
-
+/*
+    @GET
+    @Path("/bonus")
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    public Publisher<String> processed() {
+      return bonusstream
+        .buildRs();
+    }
+*/
 }
