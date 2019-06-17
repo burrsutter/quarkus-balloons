@@ -82,11 +82,12 @@ export class GameService {
   }
 
   sendMessage(message: any) {
-    // console.log("sendMessage: " + JSON.stringify(message));
+    console.log("sendMessage: " + JSON.stringify(message));
     this.ws.send(JSON.stringify(message));
   }
 
   incrementPlayerScore(score: number) {
+    console.log("incrementPlayerScore");
     this.playerScore += score;
     localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));    
     
@@ -195,7 +196,7 @@ export class GameService {
 
   private onMessage(evt) {
     const data = JSON.parse(evt.data);
-    // console.log("onMessage: " + evt.data);
+    console.log("onMessage: " + evt.data);
 
     if (data.type === 'state') {
       this.currentState = data.state;
@@ -232,6 +233,7 @@ export class GameService {
     }
 
     if (data.type === 'id') {
+      this.playerId = data.id;
       localStorage.setItem(this._playerIdKey, data.id);
     }
 

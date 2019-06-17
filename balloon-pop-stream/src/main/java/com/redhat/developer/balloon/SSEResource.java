@@ -33,13 +33,6 @@ public class SSEResource {
         return "hello";
     }
 
-    /*
-    @Incoming("popstream")
-    public CompletionStage<Void> process(KafkaMessage<String,String> msg) {        
-        LOG.info(msg.getPayload());  
-        return msg.ack();
-    }
-    */
     @Inject @Stream("popstream") PublisherBuilder<String> popstream;
     
     @GET

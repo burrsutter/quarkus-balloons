@@ -81,10 +81,11 @@ var GameService = (function () {
         this.ws.onmessage = this.onMessage.bind(this);
     };
     GameService.prototype.sendMessage = function (message) {
-        // console.log("sendMessage: " + JSON.stringify(message));
+        console.log("sendMessage: " + JSON.stringify(message));
         this.ws.send(JSON.stringify(message));
     };
     GameService.prototype.incrementPlayerScore = function (score) {
+        console.log("incrementPlayerScore");
         this.playerScore += score;
         localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
         this.sendMessage({
@@ -177,7 +178,7 @@ var GameService = (function () {
     GameService.prototype.onMessage = function (evt) {
         var _this = this;
         var data = JSON.parse(evt.data);
-        // console.log("onMessage: " + evt.data);
+        console.log("onMessage: " + evt.data);
         if (data.type === 'state') {
             this.currentState = data.state;
             this.stateChange.emit({
@@ -206,6 +207,7 @@ var GameService = (function () {
             return;
         }
         if (data.type === 'id') {
+            this.playerId = data.id;
             localStorage.setItem(this._playerIdKey, data.id);
         }
         if (data.type === 'configuration') {

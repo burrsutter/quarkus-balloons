@@ -49,7 +49,7 @@ public class GameEndpoint {
   Map<String, Session> playerSessions = new ConcurrentHashMap<>();
 
   @Inject @Stream("popstream")
-  Emitter<String> emitter;
+  Emitter<String> popstream;
 
   JsonObject pointsConfiguration = Json.createObjectBuilder()
   .add("red",1)
@@ -90,8 +90,7 @@ public class GameEndpoint {
   public void onOpen(Session session) {
     LOG.info("onOpen");
     LOG.info("id: " + session.getId());    
-    sessions.put(session.getId(),session);
-    
+    sessions.put(session.getId(),session);    
   }
 
   @OnClose
@@ -106,7 +105,9 @@ public class GameEndpoint {
   }
 
   @OnMessage
-  public void onMessage(String message, Session session) {      
+  public void onMessage(String message, Session session) { 
+      if (message == null) return;
+
       JsonReader jsonReader = Json.createReader(new StringReader(message));
       JsonObject jsonMessage = jsonReader.readObject();      
       // LOG.info("jsonMessage: " + jsonMessage);
@@ -119,27 +120,17 @@ public class GameEndpoint {
           score(jsonMessage);
         }
       }
-
   } // OnMessage
   
   // broadcast a message to all connected clients
   public void broadcast(String message) {
-    playerSessions.values().forEach(session -> {
+    sessions.values().forEach(session -> {
       session.getAsyncRemote().sendObject(message, result ->  {
           if (result.getException() != null) {
               LOG.error("Unable to send message: " + result.getException());
           }
       });
     });
-    // send the message twice, helps with some clients being semi-connected
-    playerSessions.values().forEach(session -> {
-      session.getAsyncRemote().sendObject(message, result ->  {
-          if (result.getException() != null) {
-              LOG.error("Unable to send message: " + result.getException());
-          }
-      });
-    });
-
   } // broadcast
 
   // send a message to a single client
@@ -156,8 +147,7 @@ public class GameEndpoint {
     Mobile/Client/Game requests
   */
   public void register(JsonObject jsonMessage, Session session) {
-    // right now, always create a new Player during registration
-    // note: this should change as reconnects/refreshes are common and players will wish to maintain their state
+    // right now, always create a new playerId during registration    
     String playerId = UUID.randomUUID().toString();
     String username = UserNameGenerator.generate();
     int teamNumber = ThreadLocalRandom.current().nextInt(1, 5);
@@ -168,7 +158,8 @@ public class GameEndpoint {
     // .add("playerId", playerId)
     // .add("username", username)
     // .add("teamNumber", teamNumber).build();
-    playerSessions.put(playerId,session);
+    
+    playerSessions.putIfAbsent(playerId,session);
 
     /* 
     client needs 3 messages: id, configuration, game state     
@@ -180,7 +171,7 @@ public class GameEndpoint {
 
     LOG.info("idResponse: " + idResponse.toString());
 
-    sendOnePlayer(session.getId(),idResponse.toString());
+    sendOnePlayer(playerId,idResponse.toString());
 
     JsonObject configurationResponse = Json.createObjectBuilder()
     .add("score",0)
@@ -190,16 +181,16 @@ public class GameEndpoint {
     .add("type","configuration")
     .add("configuration",currentGameConfiguration).build();
 
-    sendOnePlayer(session.getId(),configurationResponse.toString());
+    sendOnePlayer(playerId,configurationResponse.toString());
     
     if(currentGameState.equals(STARTGAME)) {
-      sendOnePlayer(session.getId(),startGameMsg.toString());
+      sendOnePlayer(playerId,startGameMsg.toString());
     } else if(currentGameState.equals(PLAY)) {
-      sendOnePlayer(session.getId(),playGameMsg.toString());
+      sendOnePlayer(playerId,playGameMsg.toString());
     } else if(currentGameState.equals(PAUSE)) {
-      sendOnePlayer(session.getId(),pauseGameMsg.toString());
+      sendOnePlayer(playerId,pauseGameMsg.toString());
     } else if(currentGameState.equals(GAMEOVER)) {
-      sendOnePlayer(session.getId(),gameOverMsg.toString());
+      sendOnePlayer(playerId,gameOverMsg.toString());
     }
 
   }
@@ -208,8 +199,8 @@ public class GameEndpoint {
    With each balloon pop
   */
   public void score(JsonObject jsonMessage) {
-    // LOG.info("POP: " + jsonMessage.getString("balloonType"));    
-    emitter.send(jsonMessage.toString());
+    LOG.info("POP: " + jsonMessage.toString());    
+    popstream.send(jsonMessage.toString());
   }
 
   /* 
@@ -244,14 +235,8 @@ public class GameEndpoint {
         
         LOG.info(allAcheivements.toString());
 
-        /* Causes an error 
-        Session s = playerSessions.get(playerId);
-        s.getAsyncRemote().sendObject(allAcheivements.toString(), result ->  {
-          if (result.getException() != null) {
-              LOG.error("Unable to send message: " + result.getException());
-          }
-        });
-        */
+        sendOnePlayer(playerId, allAcheivements.toString());
+        
       }
       // return msg.ack();
   }
@@ -301,6 +286,26 @@ public class GameEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response config(){
     return Response.ok(currentGameConfiguration).status(200).build();
+  }
+
+  @GET
+  @Path("/sessions")
+  public Response sessions(){
+    StringBuffer sb = new StringBuffer();
+    sessions.values().forEach(session -> {
+      sb.append(session.getId() + "<br>");
+    });  
+    return Response.ok(sb.toString()).status(200).build();
+  }
+
+  @GET
+  @Path("/playersessions")
+  public Response playersessions(){
+    StringBuffer sb = new StringBuffer();    
+    playerSessions.keySet().forEach(playerId -> {
+      sb.append(playerSessions.get(playerId).getId() + " : " + playerId + "<br>");
+    });  
+    return Response.ok(sb.toString()).status(200).build();
   }
 
   @GET

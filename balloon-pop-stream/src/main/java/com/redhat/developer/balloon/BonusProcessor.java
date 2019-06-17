@@ -40,29 +40,53 @@ public class BonusProcessor {
     System.out.println("* Evaluating consecutive: " + consecutive + " type: " + balloonType);
     JsonObject playerBonusObject = null;
     
-    if (consecutive >= 3) {
+
+    if (consecutive >= 3  && consecutive < 10) {
       System.out.println("** 3-in-a-row Bonus");
       playerBonusObject = Json.createObjectBuilder()
       .add("playerId", playerId)
       .add("playerName", playerName)
-      .add("achievement","pops3")
-      .add("bonus",10)
+      .add("achievement","pops1")
+      .add("bonus",100)
       .add("description","3 in a Row").build();  
 
       bonusstream.send(playerBonusObject.toString());
     } 
 
+    if (consecutive >= 10  && consecutive < 15) {
+      System.out.println("** 10-in-a-row Bonus");
+      playerBonusObject = Json.createObjectBuilder()
+      .add("playerId", playerId)
+      .add("playerName", playerName)
+      .add("achievement","pops2")
+      .add("bonus",200)
+      .add("description","10 in a Row").build();  
+
+      bonusstream.send(playerBonusObject.toString());
+    } 
+
+    if (consecutive >= 15) {
+      System.out.println("** 15-in-a-row Bonus");
+      playerBonusObject = Json.createObjectBuilder()
+      .add("playerId", playerId)
+      .add("playerName", playerName)
+      .add("achievement","pops3")
+      .add("bonus",300)
+      .add("description","15 in a Row").build();  
+
+      bonusstream.send(playerBonusObject.toString());
+    } 
+
+    
     if(balloonType.equals("balloon_red")) {      
       playerBonusObject = Json.createObjectBuilder()
       .add("playerId", playerId)
       .add("playerName", playerName)
-      .add("achievement","pops1")
+      .add("achievement","score1")
       .add("bonus",10)
       .add("description","Red Bonus").build();  
 
       bonusstream.send(playerBonusObject.toString());
-      
-      System.out.println("** Red Bonus");
     }
   
     return msg.ack(); 
