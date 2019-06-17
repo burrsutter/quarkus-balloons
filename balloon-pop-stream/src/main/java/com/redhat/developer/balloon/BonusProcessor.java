@@ -52,7 +52,7 @@ public class BonusProcessor {
 
       bonusstream.send(playerBonusObject.toString());
     } 
-
+/*
     if (consecutive >= 10  && consecutive < 15) {
       System.out.println("** 10-in-a-row Bonus");
       playerBonusObject = Json.createObjectBuilder()
@@ -77,7 +77,7 @@ public class BonusProcessor {
       bonusstream.send(playerBonusObject.toString());
     } 
 
-    
+*/    
     if(balloonType.equals("balloon_red")) {      
       playerBonusObject = Json.createObjectBuilder()
       .add("playerId", playerId)
