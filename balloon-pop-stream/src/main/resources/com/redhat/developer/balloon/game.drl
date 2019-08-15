@@ -1,0 +1,13 @@
+package com.redhat.developer.balloon
+
+import com.redhat.developer.balloon.GameEntry;
+
+
+rule "Red balloon" ruleflow-group "game"
+
+when
+    $entry: GameEntry(balloonType  == "balloon_red")
+then
+    
+    $entry.addBonus(10, "score1", "Red Bonus");
+end
