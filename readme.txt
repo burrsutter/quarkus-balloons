@@ -4,7 +4,7 @@
 docker-compose up
 
 2. Start the Game Server
-cd balloon-game-Server
+cd balloon-game-server
 mvn compile quarkus:dev
 
 3. Start the Pop Stream analyzer (determines achievements & bonuses)
@@ -15,7 +15,8 @@ mvn compile quarkus:dev
 cd balloon-game-mobile
 npm start
 
-5. Open Game in browser localhost:4200 
+5. Open Game in browser 
+open http://localhost:4200 
 
 6. Start game
 curl http://localhost:8080/142sjer43/start
@@ -29,5 +30,7 @@ curl http://localhost:8080/142sjer43/pause
 9. Game Over
 curl http://localhost:8080/142sjer43/gameover
 
-
-
+10. Start the pop stream analyzer
+cd balloon-pop-stream
+mvn compile quarkus:dev
+open http://localhost:8085/sse/stream
