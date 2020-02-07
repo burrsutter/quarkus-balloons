@@ -34,3 +34,10 @@ curl http://localhost:8080/142sjer43/gameover
 cd balloon-pop-stream
 mvn compile quarkus:dev
 open http://localhost:8085/sse/stream
+
+11. Easy
+curl http://localhost:8080/142sjer43/easyconfig
+
+12. Hard
+11. Easy
+curl http://localhost:8080/142sjer43/hardconfig
