@@ -56,7 +56,9 @@ public class GameEndpoint {
   .add("yellow",1)
   .add("green",1)
   .add("blue",1)
-  .add("goldenSnitch",50).build();
+  .add("goldenSnitch1",50)
+  .add("goldenSnitch2",50)
+  .build();
 
   JsonObject currentGameConfiguration = Json.createObjectBuilder()
   .add("gameId", currentGameId)
@@ -65,7 +67,8 @@ public class GameEndpoint {
   .add("scale","0.9")
   .add("opacity",85)
   .add("speed",50)
-  .add("goldenSnitch", Boolean.FALSE)
+  .add("goldenSnitch1", Boolean.FALSE)
+  .add("goldenSnitch2", Boolean.FALSE)
   .add("points",pointsConfiguration).build();
 
   JsonObject startGameMsg = Json.createObjectBuilder()
@@ -362,20 +365,23 @@ public class GameEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response easyconfig(){
     JsonObject newpointsConfiguration = Json.createObjectBuilder()
-    .add("red",10)
-    .add("yellow",20)
-    .add("green",30)
-    .add("blue",40)
-    .add("goldenSnitch",100).build();
+    .add("red",1)
+    .add("yellow",1)
+    .add("green",1)
+    .add("blue",1)
+    .add("goldenSnitch1",100)
+    .add("goldenSnitch2",100)
+    .build();
 
     JsonObject newcurrentGameConfiguration = Json.createObjectBuilder()
     .add("gameId", currentGameId)
     .add("background","canary")
     .add("trafficPercentage",100)
-    .add("scale","1.9")
+    .add("scale",".9")
     .add("opacity",85)
-    .add("speed",20)
-    .add("goldenSnitch", Boolean.TRUE)
+    .add("speed",35)
+    .add("goldenSnitch1", Boolean.TRUE)
+    .add("goldenSnitch2", Boolean.TRUE)
     .add("points",newpointsConfiguration).build();
 
     currentGameConfiguration = newcurrentGameConfiguration;
@@ -398,7 +404,9 @@ public class GameEndpoint {
     .add("yellow",2)
     .add("green",3)
     .add("blue",4)
-    .add("goldenSnitch",10).build();
+    .add("goldenSnitch1",10)
+    .add("goldenSnitch2",10)
+    .build();
 
     JsonObject newcurrentGameConfiguration = Json.createObjectBuilder()
     .add("gameId", currentGameId)
@@ -407,7 +415,8 @@ public class GameEndpoint {
     .add("scale","0.4")
     .add("opacity",85)
     .add("speed",95)
-    .add("goldenSnitch", Boolean.FALSE)
+    .add("goldenSnitch1", Boolean.FALSE)
+    .add("goldenSnitch2", Boolean.FALSE)
     .add("points",newpointsConfiguration).build();
 
     currentGameConfiguration = newcurrentGameConfiguration;
