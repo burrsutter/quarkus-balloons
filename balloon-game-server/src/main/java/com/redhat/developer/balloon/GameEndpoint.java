@@ -1,36 +1,44 @@
 package com.redhat.developer.balloon;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.websocket.*;
-import javax.websocket.server.ServerEndpoint;
-import org.jboss.logging.Logger;
-
+import java.io.StringReader;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.io.StringReader;
-import java.util.UUID;
 
-import javax.ws.rs.*;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.websocket.Endpoint;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
 
+import io.quarkus.scheduler.Scheduled;
 import io.smallrye.reactive.messaging.annotations.Emitter;
 import io.smallrye.reactive.messaging.annotations.Stream;
 
-import org.eclipse.microprofile.reactive.messaging.Incoming;
-import io.smallrye.reactive.messaging.kafka.KafkaMessage;
-import java.util.concurrent.CompletionStage;
-
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 
 @ServerEndpoint("/game") // for the mobile game
-@Path("/142sjer43") // for the administration
+@Path("/") // for the administration
 @ApplicationScoped
 public class GameEndpoint {
   private static final Logger LOG = Logger.getLogger(Endpoint.class);
@@ -39,17 +47,41 @@ public class GameEndpoint {
   private static final String PAUSE = "pause";
   private static final String GAMEOVER = "game-over";
 
-  // this value should be reset at "startgame"
+  @Inject
+  @RestClient
+  ConfigurationService configurationService;
+
+  // this value should be reset at "startgame" but hardcoding for now
   private String currentGameId = "ab7e90e1-18a6-94d1-05bb-1e17a9cc8dad";
 
-  // client sessions/connections
+  // websocket client sessions/connections
   Map<String, Session> sessions = new ConcurrentHashMap<>();
 
   // playerMap
   Map<String, Session> playerSessions = new ConcurrentHashMap<>();
 
+  // send the player's pops to Kafka topic
   @Inject @Stream("popstream")
   Emitter<String> popstream;
+
+  String prevPolledResponse = "";
+  int pollCnt = 0;
+  
+  Points defaultPoints = new Points(
+    1, 1, 1, 1, 50, 50
+  );
+
+  Config currentGame = new Config(
+    currentGameId, 
+    "default", // background
+    100, // ignore
+    "0.6", // size
+    85, // opacity
+    70, // speed
+    false, // snitch1
+    false, // snitch2
+    defaultPoints
+  );    
 
   JsonObject pointsConfiguration = Json.createObjectBuilder()
   .add("red",1)
@@ -60,7 +92,8 @@ public class GameEndpoint {
   .add("goldenSnitch2",50)
   .build();
 
-  JsonObject currentGameConfiguration = Json.createObjectBuilder()
+
+  JsonObject defaultGameConfiguration = Json.createObjectBuilder()
   .add("gameId", currentGameId)
   .add("background","default")
   .add("trafficPercentage",100)
@@ -70,6 +103,9 @@ public class GameEndpoint {
   .add("goldenSnitch1", Boolean.FALSE)
   .add("goldenSnitch2", Boolean.FALSE)
   .add("points",pointsConfiguration).build();
+
+  // current can be overwritten at runtime
+  JsonObject currentGameConfiguration = defaultGameConfiguration;
 
   JsonObject startGameMsg = Json.createObjectBuilder()
   .add("type","state")
@@ -152,7 +188,9 @@ public class GameEndpoint {
   public void register(JsonObject jsonMessage, Session session) {
     // right now, always create a new playerId during registration    
     String playerId = UUID.randomUUID().toString();
+    // and assigns a new generated user name
     String username = UserNameGenerator.generate();
+    // and assigns a team number
     int teamNumber = ThreadLocalRandom.current().nextInt(1, 5);
     LOG.info("playerId: " + playerId);
     LOG.info("username: " + username);
@@ -165,7 +203,7 @@ public class GameEndpoint {
     playerSessions.putIfAbsent(playerId,session);
 
     /* 
-    client needs 3 messages: id, configuration, game state     
+    client needs 3 messages initially: id, configuration, game state     
     */
 
     JsonObject idResponse = Json.createObjectBuilder()
@@ -207,7 +245,7 @@ public class GameEndpoint {
   }
 
   /* 
-  Listen for bonus  
+  Listen for bonus topic, bonuses have to be sent out to unique player 
   */
   @Incoming("bonusstream")
   // public CompletionStage<Void> process(KafkaMessage<String,String> msg) {
@@ -315,7 +353,7 @@ public class GameEndpoint {
   @Path("/achieve")
   @Produces(MediaType.APPLICATION_JSON)
   public Response achievement(){
-    // There can be multiple achievements so send them all, per player
+    // There can be multiple achievements so send them all to all players
     JsonArray achievements = Json.createArrayBuilder()
     .add(Json.createObjectBuilder()
       .add("type","pops1")
@@ -361,75 +399,186 @@ public class GameEndpoint {
   }
 
   @GET
-  @Path("/easyconfig")
+  @Path("/easy") 
   @Produces(MediaType.APPLICATION_JSON)
   public Response easyconfig(){
-    JsonObject newpointsConfiguration = Json.createObjectBuilder()
-    .add("red",1)
-    .add("yellow",1)
-    .add("green",1)
-    .add("blue",1)
-    .add("goldenSnitch1",100)
-    .add("goldenSnitch2",100)
-    .build();
 
-    JsonObject newcurrentGameConfiguration = Json.createObjectBuilder()
-    .add("gameId", currentGameId)
-    .add("background","canary")
-    .add("trafficPercentage",100)
-    .add("scale",".9")
-    .add("opacity",85)
-    .add("speed",35)
-    .add("goldenSnitch1", Boolean.TRUE)
-    .add("goldenSnitch2", Boolean.TRUE)
-    .add("points",newpointsConfiguration).build();
+    Points easyPoints = new Points(
+      4, 2, 3, 1, 100, 100
+    );
+  
+    Config easyGame = new Config(
+      currentGameId, 
+      "default", // background
+      100, // ignore
+      "1.0", // size
+      85, // opacity
+      35, // speed
+      true, // snitch1
+      true, // snitch2
+      easyPoints
+    );    
+    
+    currentGame = easyGame;
 
-    currentGameConfiguration = newcurrentGameConfiguration;
-    LOG.info(currentGameConfiguration);
+    sendGameConfigUpdate(currentGame);
 
-    JsonObject newConfigResponse = Json.createObjectBuilder()
-    .add("type","configuration")
-    .add("configuration",currentGameConfiguration).build();
-
-    broadcast(newConfigResponse.toString());
-
-    return Response.ok(currentGameConfiguration).status(200).build();
+    return Response.ok(currentGame).status(200).build();
   }
   @GET
-  @Path("/hardconfig")
+  @Path("/hard")
   @Produces(MediaType.APPLICATION_JSON)
   public Response hardconfig(){
-    JsonObject newpointsConfiguration = Json.createObjectBuilder()
-    .add("red",1)
-    .add("yellow",2)
-    .add("green",3)
-    .add("blue",4)
-    .add("goldenSnitch1",10)
-    .add("goldenSnitch2",10)
-    .build();
+    Points hardPoints = new Points(
+      4, 2, 3, 1, 100, 100
+    );
+  
+    Config hardGame = new Config(
+      currentGameId, 
+      "default", // background
+      100, // ignore
+      ".3", // size
+      50, // opacity
+      95, // speed
+      false, // snitch1
+      false, // snitch2
+      hardPoints
+    );    
+    
+    currentGame = hardGame;
 
-    JsonObject newcurrentGameConfiguration = Json.createObjectBuilder()
-    .add("gameId", currentGameId)
-    .add("background","blue")
-    .add("trafficPercentage",100)
-    .add("scale","0.4")
-    .add("opacity",85)
-    .add("speed",95)
-    .add("goldenSnitch1", Boolean.FALSE)
-    .add("goldenSnitch2", Boolean.FALSE)
-    .add("points",newpointsConfiguration).build();
+    sendGameConfigUpdate(currentGame);
 
-    currentGameConfiguration = newcurrentGameConfiguration;
-    LOG.info(currentGameConfiguration);
+    return Response.ok(currentGame).status(200).build();
+  }
+  
 
-    JsonObject newConfigResponse = Json.createObjectBuilder()
-    .add("type","configuration")
-    .add("configuration",currentGameConfiguration).build();
+  @GET
+  @Path("/burr") 
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response goldenSnitch1() {
+    
+    currentGame.setGoldenSnitch1(Boolean.TRUE);
+    currentGame.setGoldenSnitch2(Boolean.FALSE);
+    currentGame.setBackground("green");
 
-    broadcast(newConfigResponse.toString());
+    sendGameConfigUpdate(currentGame);
 
-    return Response.ok(currentGameConfiguration).status(200).build();
+    return Response.ok(currentGame).status(200).build();
   }
 
+  @GET
+  @Path("/ray")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response goldenSnitch2() {
+    currentGame.setGoldenSnitch1(Boolean.FALSE);
+    currentGame.setGoldenSnitch2(Boolean.TRUE);
+    currentGame.setBackground("blue");
 
+    sendGameConfigUpdate(currentGame);
+
+    return Response.ok(currentGame).status(200).build();
+  }  
+
+  @GET
+  @Path("/default")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response defaultConfig() {
+    
+    // resetting to the default configuration
+    prevPolledResponse = "";
+    
+    Points defaultPoints = new Points(
+      1, 1, 1, 1, 50, 50
+    );
+  
+    Config defaultGame = new Config(
+      currentGameId, 
+      "default", // background
+      100, // ignore
+      "0.6", // size
+      85, // opacity
+      70, // speed
+      false, // snitch1
+      false, // snitch2
+      defaultPoints
+    );    
+    
+    currentGame = defaultGame;
+
+    sendGameConfigUpdate(currentGame);
+
+    return Response.ok(currentGame).status(200).build();
+  }
+
+  private void sendGameConfigUpdate(Config newGameConfig) {
+    Jsonb jsonb = JsonbBuilder.create();
+
+    ConfigMsgType type = new ConfigMsgType("configuration",newGameConfig);
+    String stringJsonMsgType = jsonb.toJson(type);
+    
+    System.out.println(stringJsonMsgType);
+    // broadcast out the websocket to all players
+    broadcast(stringJsonMsgType);
+  }
+
+  @Scheduled(every="2s")
+  void pollConfig() {
+    System.out.println("every 2 sec");
+    try {
+      String response = configurationService.getConfig().trim();
+      
+      System.out.println("\n *** response");
+      System.out.println(response);
+      
+      if (!response.equals(prevPolledResponse)) {        
+        
+        System.out.println("\n *** new response " + pollCnt++ + ":");
+        prevPolledResponse = response;
+        
+        // for debugging/logging
+        /*
+        Jsonb jsonb = JsonbBuilder.create();
+        String convertedConfigString = jsonb.toJson(convertedConfig);
+        System.out.println("\n *** converted response");
+        System.out.println(convertedConfigString);
+        */        
+        Config convertedConfig = convertResponseStringToConfig(response);  
+        sendGameConfigUpdate(convertedConfig);
+      }
+
+    } catch (Exception ex) {
+      System.out.println("Ignoring: " + ex);
+    }
+  }
+
+  private Config convertResponseStringToConfig(String response) {
+      
+      Config convertedConfig = new Config();
+      
+      JsonReader jsonReader = Json.createReader(new StringReader(response));
+      JsonObject jsonObjectConfig = jsonReader.readObject();  
+      convertedConfig.setBackground(jsonObjectConfig.getString("background"));
+      convertedConfig.setGameId(jsonObjectConfig.getString("gameId"));
+      convertedConfig.setGoldenSnitch1(jsonObjectConfig.getBoolean("goldenSnitch1"));
+      convertedConfig.setGoldenSnitch2(jsonObjectConfig.getBoolean("goldenSnitch2"));
+      convertedConfig.setOpacity(jsonObjectConfig.getInt("opacity"));
+      convertedConfig.setScale(jsonObjectConfig.getString("scale"));
+      convertedConfig.setSpeed(jsonObjectConfig.getInt("speed"));
+      convertedConfig.setTrafficPercentage(jsonObjectConfig.getInt("trafficPercentage"));
+      
+      Points convertedPoints = new Points(
+        jsonObjectConfig.getJsonObject("points").getInt("red"),
+        jsonObjectConfig.getJsonObject("points").getInt("yellow"),
+        jsonObjectConfig.getJsonObject("points").getInt("green"),
+        jsonObjectConfig.getJsonObject("points").getInt("blue"),
+        jsonObjectConfig.getJsonObject("points").getInt("goldenSnitch1"),
+        jsonObjectConfig.getJsonObject("points").getInt("goldenSnitch2")
+      );
+
+      convertedConfig.setPoints(convertedPoints);
+
+      
+      return convertedConfig;
+  }
 }

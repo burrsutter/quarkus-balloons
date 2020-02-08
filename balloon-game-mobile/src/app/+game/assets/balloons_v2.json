@@ -1,0 +1,60 @@
+{"frames": {
+
+"balloon_red":
+{
+	"frame": {"x":0,"y":0,"w":172,"h":172},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":172,"h":172},
+	"sourceSize": {"w":172,"h":172}
+},
+"balloon_green":
+{
+	"frame": {"x":172,"y":0,"w":172,"h":172},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":172,"h":172},
+	"sourceSize": {"w":172,"h":172}
+},
+"balloon_blue":
+{
+	"frame": {"x":344,"y":0,"w":172,"h":172},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":172,"h":172},
+	"sourceSize": {"w":172,"h":172}
+},
+"balloon_yellow":
+{
+	"frame": {"x":516,"y":0,"w":172,"h":172},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":172,"h":172},
+	"sourceSize": {"w":172,"h":172}
+},
+"balloon_golden1":
+{
+	"frame": {"x":688,"y":0,"w":172,"h":172},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":172,"h":172},
+	"sourceSize": {"w":172,"h":172}
+},
+"balloon_golden2":
+{
+	"frame": {"x":860,"y":0,"w":172,"h":172},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":172,"h":172},
+	"sourceSize": {"w":172,"h":172}
+}},
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "balloons_v2.png",
+	"format": "RGBA8888",
+	"size": {"w":688,"h":172},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:1628fbc09017a082c0b9c1f95e2320fd:9a3ab955f43ca9ba9d960de0de68466d:1f76e39750ef6e7665adb3d0943b9bfa$"
+}
+}

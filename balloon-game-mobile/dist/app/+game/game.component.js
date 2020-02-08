@@ -17,8 +17,9 @@ var GameComponent = (function () {
         this.currentState = 'title';
         this.teamScore = 0;
         this.achievements = [];
-        this.goldenSnitchCreated = false;
-        this.goldenSnitchChance = 0.1;
+        this.goldenSnitch1Created = false;
+        this.goldenSnitch2Created = false;
+        this.goldenSnitchChance = 0.2;
         this.currentState = this.gameService.currentState;
         this.configuration = this.gameService.configuration;
         if (this.configuration.points) {
@@ -27,7 +28,8 @@ var GameComponent = (function () {
                 'balloon_blue': this.configuration.points.blue,
                 'balloon_yellow': this.configuration.points.yellow,
                 'balloon_green': this.configuration.points.green,
-                'balloon_golden': this.configuration.points.goldenSnitch,
+                'balloon_golden1': this.configuration.points.goldenSnitch1,
+                'balloon_golden2': this.configuration.points.goldenSnitch2,
             };
         }
         this.stateChangeHandler = this.stateChangeHandler.bind(this);
@@ -39,7 +41,8 @@ var GameComponent = (function () {
         var _this = this;
         this.game = new Phaser.Game(window.innerWidth, window.innerHeight - 56, Phaser.AUTO, 'game', null, true);
         var fireRate = 100;
-        var numBalloons = 4;
+        // Burr: const numBalloons = 4;
+        var numBalloons = 5;
         var balloonRotationSpeed = 100;
         var nextFire = 0;
         var consecutive = 0;
@@ -50,7 +53,8 @@ var GameComponent = (function () {
         };
         var PlayState = {
             preload: function () {
-                _this.game.load.atlas('balloons', './app/+game/assets/balloons.png', './app/+game/assets/balloons.json');
+                // Burr: this.game.load.atlas('balloons', './app/+game/assets/balloons.png', './app/+game/assets/balloons.json');
+                _this.game.load.atlas('balloons', './app/+game/assets/balloons_v2.png', './app/+game/assets/balloons_v2.json');
                 _this.game.load.spritesheet('explosion', './app/+game/assets/explosion.png', 128, 128, 10);
             },
             create: function () {
@@ -85,17 +89,25 @@ var GameComponent = (function () {
                 balloon.anchor.setTo(0.5);
                 balloon.inputEnabled = true;
                 balloon.events.onOutOfBounds.add(function () {
-                    if (balloon.frameName === 'balloon_golden') {
+                    if (balloon.frameName === 'balloon_golden1') {
                         _this.balloons.remove(balloon);
-                        _this.goldenSnitchCreated = false;
+                        _this.goldenSnitch1Created = false;
+                    }
+                    if (balloon.frameName === 'balloon_golden2') {
+                        _this.balloons.remove(balloon);
+                        _this.goldenSnitch2Created = false;
                     }
                     consecutive = 0;
                 });
                 balloon.events.onInputDown.add(function (evt) {
                     balloon.kill();
-                    if (balloon.frameName === 'balloon_golden') {
+                    if (balloon.frameName === 'balloon_golden1') {
                         _this.balloons.remove(balloon);
-                        _this.goldenSnitchCreated = false;
+                        _this.goldenSnitch1Created = false;
+                    }
+                    if (balloon.frameName === 'balloon_golden2') {
+                        _this.balloons.remove(balloon);
+                        _this.goldenSnitch2Created = false;
                     }
                     consecutive += 1;
                     _this.gameService.playerScore += _this.pointsHash[balloon.frameName];
@@ -110,7 +122,8 @@ var GameComponent = (function () {
                         playerName: _this.gameService.playerUsername,
                         // encryptedScore: sjcl.encrypt(''+this.gameService.playerId, ''+this.gameService.playerScore),
                         consecutive: consecutive,
-                        // goldenSnitchPopped: (balloon.frameName === 'balloon_golden') ? true : false,
+                        goldenSnitch1Popped: (balloon.frameName === 'balloon_golden1') ? true : false,
+                        goldenSnitch2Popped: (balloon.frameName === 'balloon_golden2') ? true : false,
                         balloonType: balloon.frameName
                     });
                     _this.gameService.updatePlayerScore(_this.gameService.playerScore);
@@ -133,10 +146,20 @@ var GameComponent = (function () {
             },
             throwGoodObject: function () {
                 var obj;
-                if (_this.configuration.goldenSnitch && Math.random() < _this.goldenSnitchChance && !_this.goldenSnitchCreated) {
+                if (_this.configuration.goldenSnitch1 && Math.random() < _this.goldenSnitchChance && !_this.goldenSnitch1Created) {
+                    console.log("creating Burr");
                     obj = _this.balloons.create(0, 0, 'balloons', 4, false);
                     PlayState.setupBalloon(obj);
-                    _this.goldenSnitchCreated = true;
+                    _this.goldenSnitch1Created = true;
+                }
+                else {
+                    obj = _this.balloons.getFirstDead();
+                }
+                if (_this.configuration.goldenSnitch2 && Math.random() < _this.goldenSnitchChance && !_this.goldenSnitch2Created) {
+                    console.log("creating Ray");
+                    obj = _this.balloons.create(0, 0, 'balloons', 5, false);
+                    PlayState.setupBalloon(obj);
+                    _this.goldenSnitch2Created = true;
                 }
                 else {
                     obj = _this.balloons.getFirstDead();
@@ -198,7 +221,8 @@ var GameComponent = (function () {
                 'balloon_blue': this.configuration.points.blue,
                 'balloon_yellow': this.configuration.points.yellow,
                 'balloon_green': this.configuration.points.green,
-                'balloon_golden': this.configuration.points.goldenSnitch,
+                'balloon_golden1': this.configuration.points.goldenSnitch1,
+                'balloon_golden2': this.configuration.points.goldenSnitch2,
             };
         }
     };

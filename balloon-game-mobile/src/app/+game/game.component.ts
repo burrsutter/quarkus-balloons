@@ -113,6 +113,10 @@ export class GameComponent implements OnInit, OnDestroy {
             this.balloons.remove(balloon);
             this.goldenSnitch1Created = false;
           }
+          if (balloon.frameName === 'balloon_golden2') {
+            this.balloons.remove(balloon);
+            this.goldenSnitch2Created = false;
+          }
           consecutive = 0;
         });
 
@@ -123,6 +127,11 @@ export class GameComponent implements OnInit, OnDestroy {
             this.balloons.remove(balloon);
             this.goldenSnitch1Created = false;
           }
+          if (balloon.frameName === 'balloon_golden2') {
+            this.balloons.remove(balloon);
+            this.goldenSnitch2Created = false;
+          }
+
 
           consecutive += 1;
           this.gameService.playerScore += this.pointsHash[balloon.frameName];
@@ -167,7 +176,7 @@ export class GameComponent implements OnInit, OnDestroy {
         let obj;
         
         if (this.configuration.goldenSnitch1 && Math.random() < this.goldenSnitchChance && !this.goldenSnitch1Created) {
-          
+          console.log("creating Burr"); 
           obj = this.balloons.create(0, 0, 'balloons', 4, false);
           PlayState.setupBalloon(obj);
           
@@ -177,7 +186,7 @@ export class GameComponent implements OnInit, OnDestroy {
         }
 
         if (this.configuration.goldenSnitch2 && Math.random() < this.goldenSnitchChance && !this.goldenSnitch2Created) {
-                    
+          console.log("creating Ray");          
           obj = this.balloons.create(0, 0, 'balloons', 5, false);
           PlayState.setupBalloon(obj);
           
