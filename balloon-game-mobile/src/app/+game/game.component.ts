@@ -54,7 +54,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
     const fireRate = 100;
     // Burr: const numBalloons = 4;
-    const numBalloons = 5;
+    const numBalloons = 4; // or 5?
     const balloonRotationSpeed = 100;
     let nextFire = 0;
     let consecutive = 0;
@@ -176,7 +176,7 @@ export class GameComponent implements OnInit, OnDestroy {
         let obj;
         
         if (this.configuration.goldenSnitch1 && Math.random() < this.goldenSnitchChance && !this.goldenSnitch1Created) {
-          console.log("creating Burr"); 
+          // console.log("creating Burr"); 
           obj = this.balloons.create(0, 0, 'balloons', 4, false);
           PlayState.setupBalloon(obj);
           
@@ -186,7 +186,7 @@ export class GameComponent implements OnInit, OnDestroy {
         }
 
         if (this.configuration.goldenSnitch2 && Math.random() < this.goldenSnitchChance && !this.goldenSnitch2Created) {
-          console.log("creating Ray");          
+          // console.log("creating Ray");          
           obj = this.balloons.create(0, 0, 'balloons', 5, false);
           PlayState.setupBalloon(obj);
           

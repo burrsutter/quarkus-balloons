@@ -165,7 +165,7 @@ var GameService = (function () {
         if (this.playerUsername) {
             message['username'] = this.playerUsername;
         }
-        console.log("onOpen: " + JSON.stringify(message));
+        // console.log("onOpen: " + JSON.stringify(message));
         this.ws.send(JSON.stringify(message));
     };
     GameService.prototype.onClose = function (evt) {
@@ -178,8 +178,9 @@ var GameService = (function () {
     GameService.prototype.onMessage = function (evt) {
         var _this = this;
         var data = JSON.parse(evt.data);
-        console.log("onMessage: " + evt.data);
+        // console.log("onMessage: " + evt.data);
         if (data.type === 'state') {
+            console.log("onMessage: state=" + data.state);
             this.currentState = data.state;
             this.stateChange.emit({
                 state: this.currentState
@@ -211,6 +212,7 @@ var GameService = (function () {
             localStorage.setItem(this._playerIdKey, data.id);
         }
         if (data.type === 'configuration') {
+            console.log("onMessage: configuration=" + JSON.stringify(data.configuration));
             if (data.username) {
                 localStorage.setItem(this._usernameKey, data.username);
                 this.playerUsername = data.username;

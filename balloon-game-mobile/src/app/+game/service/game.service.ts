@@ -183,7 +183,7 @@ export class GameService {
     if (this.playerUsername) {
       message['username'] = this.playerUsername;
     }
-    console.log("onOpen: " + JSON.stringify(message));
+    // console.log("onOpen: " + JSON.stringify(message));
     this.ws.send(JSON.stringify(message));
   }
 
@@ -196,9 +196,10 @@ export class GameService {
 
   private onMessage(evt) {
     const data = JSON.parse(evt.data);
-    console.log("onMessage: " + evt.data);
+    // console.log("onMessage: " + evt.data);
 
     if (data.type === 'state') {
+      console.log("onMessage: state=" + data.state);
       this.currentState = data.state;
       this.stateChange.emit({
         state: this.currentState
@@ -238,6 +239,7 @@ export class GameService {
     }
 
     if (data.type === 'configuration') {
+      console.log("onMessage: configuration=" + JSON.stringify(data.configuration));
       if (data.username) {
         localStorage.setItem(this._usernameKey, data.username);
         this.playerUsername = data.username;

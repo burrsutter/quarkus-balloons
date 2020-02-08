@@ -38,7 +38,7 @@ import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 
 @ServerEndpoint("/game") // for the mobile game
-@Path("/") // for the administration
+@Path("/a") // for the administration
 @ApplicationScoped
 public class GameEndpoint {
   private static final Logger LOG = Logger.getLogger(Endpoint.class);
@@ -113,15 +113,15 @@ public class GameEndpoint {
 
   JsonObject playGameMsg = Json.createObjectBuilder()
   .add("type","state")
-  .add("state","play").build();
+  .add("state",PLAY).build();
 
   JsonObject pauseGameMsg = Json.createObjectBuilder()
   .add("type","state")
-  .add("state","pause").build();
+  .add("state",PAUSE).build();
 
   JsonObject gameOverMsg = Json.createObjectBuilder()
   .add("type","state")
-  .add("state","game-over").build();
+  .add("state",GAMEOVER).build();
 
   String currentGameState = STARTGAME;
 
@@ -143,7 +143,7 @@ public class GameEndpoint {
       LOG.error("onError", throwable);        
   }
 
-  @OnMessage
+  @OnMessage // from client to server
   public void onMessage(String message, Session session) { 
       if (message == null) return;
 
@@ -152,13 +152,15 @@ public class GameEndpoint {
       // LOG.info("jsonMessage: " + jsonMessage);
       String msgtype = jsonMessage.getString("type");
       // LOG.info("msgtype: " + msgtype);
+
       if (msgtype != null && !msgtype.equals("")) {
         if(msgtype.equals("register")) {
-          register(jsonMessage, session);
+          registerClient(jsonMessage, session);
         } else if(msgtype.equals("score")) {
           score(jsonMessage);
-        }
+        }      
       }
+
   } // OnMessage
   
   // broadcast a message to all connected clients
@@ -185,21 +187,18 @@ public class GameEndpoint {
   /*
     Mobile/Client/Game requests
   */
-  public void register(JsonObject jsonMessage, Session session) {
+  public void registerClient(JsonObject jsonMessage, Session session) {
     // right now, always create a new playerId during registration    
     String playerId = UUID.randomUUID().toString();
     // and assigns a new generated user name
     String username = UserNameGenerator.generate();
-    // and assigns a team number
+    // and assigns a random team number
     int teamNumber = ThreadLocalRandom.current().nextInt(1, 5);
-    LOG.info("playerId: " + playerId);
+    LOG.info("\n\nCreating:");
     LOG.info("username: " + username);
+    LOG.info("playerId: " + playerId);  
     LOG.info("teamNumber: " + teamNumber);
-    // JsonObject playerObject = Json.createObjectBuilder()
-    // .add("playerId", playerId)
-    // .add("username", username)
-    // .add("teamNumber", teamNumber).build();
-    
+     
     playerSessions.putIfAbsent(playerId,session);
 
     /* 
@@ -214,16 +213,21 @@ public class GameEndpoint {
 
     sendOnePlayer(playerId,idResponse.toString());
 
-    JsonObject configurationResponse = Json.createObjectBuilder()
-    .add("score",0)
-    .add("team",teamNumber)
-    .add("playerId",playerId)
-    .add("username", username)
-    .add("type","configuration")
-    .add("configuration",currentGameConfiguration).build();
+    RegistrationResponse configurationResponse = new RegistrationResponse(
+      0, // initial score 
+      teamNumber, 
+      playerId, 
+      username, 
+      "configuration", // type, 
+      currentGame);
 
-    sendOnePlayer(playerId,configurationResponse.toString());
+    Jsonb jsonb = JsonbBuilder.create();
+    String stringConfigurationResponse = jsonb.toJson(configurationResponse);
+
+    sendOnePlayer(playerId,stringConfigurationResponse);
     
+    LOG.info("\n GAME-STATE: " + currentGameState + "\n");
+
     if(currentGameState.equals(STARTGAME)) {
       sendOnePlayer(playerId,startGameMsg.toString());
     } else if(currentGameState.equals(PLAY)) {
@@ -234,7 +238,7 @@ public class GameEndpoint {
       sendOnePlayer(playerId,gameOverMsg.toString());
     }
 
-  }
+  } // registerClient
 
   /*
    With each balloon pop
@@ -323,10 +327,17 @@ public class GameEndpoint {
   }
 
   @GET
+  @Path("/gamestate")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response gamestate(){
+    return Response.ok(currentGameState).status(200).build();
+  }
+
+  @GET
   @Path("/config")
   @Produces(MediaType.APPLICATION_JSON)
   public Response config(){
-    return Response.ok(currentGameConfiguration).status(200).build();
+    return Response.ok(currentGame).status(200).build();
   }
 
   @GET
@@ -522,7 +533,7 @@ public class GameEndpoint {
     broadcast(stringJsonMsgType);
   }
 
-  @Scheduled(every="2s")
+  // @Scheduled(every="2s")
   void pollConfig() {
     System.out.println("every 2 sec");
     try {

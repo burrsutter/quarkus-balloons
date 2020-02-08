@@ -42,7 +42,7 @@ var GameComponent = (function () {
         this.game = new Phaser.Game(window.innerWidth, window.innerHeight - 56, Phaser.AUTO, 'game', null, true);
         var fireRate = 100;
         // Burr: const numBalloons = 4;
-        var numBalloons = 5;
+        var numBalloons = 4; // or 5?
         var balloonRotationSpeed = 100;
         var nextFire = 0;
         var consecutive = 0;
@@ -147,7 +147,7 @@ var GameComponent = (function () {
             throwGoodObject: function () {
                 var obj;
                 if (_this.configuration.goldenSnitch1 && Math.random() < _this.goldenSnitchChance && !_this.goldenSnitch1Created) {
-                    console.log("creating Burr");
+                    // console.log("creating Burr"); 
                     obj = _this.balloons.create(0, 0, 'balloons', 4, false);
                     PlayState.setupBalloon(obj);
                     _this.goldenSnitch1Created = true;
@@ -156,7 +156,7 @@ var GameComponent = (function () {
                     obj = _this.balloons.getFirstDead();
                 }
                 if (_this.configuration.goldenSnitch2 && Math.random() < _this.goldenSnitchChance && !_this.goldenSnitch2Created) {
-                    console.log("creating Ray");
+                    // console.log("creating Ray");          
                     obj = _this.balloons.create(0, 0, 'balloons', 5, false);
                     PlayState.setupBalloon(obj);
                     _this.goldenSnitch2Created = true;
