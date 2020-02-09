@@ -33,6 +33,7 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import io.quarkus.scheduler.Scheduled;
 import io.smallrye.reactive.messaging.annotations.Emitter;
 import io.smallrye.reactive.messaging.annotations.Stream;
 import io.smallrye.reactive.messaging.kafka.KafkaMessage;
@@ -541,27 +542,21 @@ public class GameEndpoint {
     broadcast(stringJsonMsgType);
   }
 
-  // @Scheduled(every="2s")
+  @Scheduled(every="2s")
   void pollConfig() {
-    System.out.println("every 2 sec");
+    // System.out.println("every 2 sec");
     try {
       String response = configurationService.getConfig().trim();
+      // response is a string of JSON
+      // System.out.println("\n *** response");
+      // System.out.println(response);
       
-      System.out.println("\n *** response");
-      System.out.println(response);
-      
+      // only alert clients if the config has changed since previous poll
       if (!response.equals(prevPolledResponse)) {        
         
         System.out.println("\n *** new response " + pollCnt++ + ":");
         prevPolledResponse = response;
         
-        // for debugging/logging
-        /*
-        Jsonb jsonb = JsonbBuilder.create();
-        String convertedConfigString = jsonb.toJson(convertedConfig);
-        System.out.println("\n *** converted response");
-        System.out.println(convertedConfigString);
-        */        
         Config convertedConfig = convertResponseStringToConfig(response);  
         sendGameConfigUpdate(convertedConfig);
       }
