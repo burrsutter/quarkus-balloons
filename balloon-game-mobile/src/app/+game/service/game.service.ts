@@ -289,9 +289,11 @@ export class GameService {
             }
         });
 
+        // You can only receive/achieve an achievement one time
         if (found) {
           return;
         }
+        
 
         this.updateAchievements(messageAchievement);
       });

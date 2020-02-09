@@ -2,16 +2,16 @@ package com.redhat.developer.balloon;
 
 public class RegistrationResponse {
   private int score;
-  private int teamNumber;
+  private int team;
   private String playerId;
   private String username;
   private String type;
   private Config configuration;
 
-  public RegistrationResponse(int score, int teamNumber, String playerId, String username, String type,
+  public RegistrationResponse(int score, int team, String playerId, String username, String type,
   Config configuration) {
     this.score = score;
-    this.teamNumber = teamNumber;
+    this.team = team;
     this.playerId = playerId;
     this.username = username;
     this.type = type;
@@ -27,12 +27,12 @@ public class RegistrationResponse {
     this.score = score;
   }
 
-  public int getTeamNumber() {
-    return teamNumber;
+  public int getTeam() {
+    return team;
   }
 
-  public void setTeamNumber(int teamNumber) {
-    this.teamNumber = teamNumber;
+  public void setTeam(int team) {
+    this.team = team;
   }
 
   public String getPlayerId() {

@@ -3,6 +3,7 @@ package com.redhat.developer.balloon;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,7 +13,8 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.websocket.Endpoint;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -26,16 +28,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
-import io.quarkus.scheduler.Scheduled;
 import io.smallrye.reactive.messaging.annotations.Emitter;
 import io.smallrye.reactive.messaging.annotations.Stream;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
+import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 
 @ServerEndpoint("/game") // for the mobile game
 @Path("/a") // for the administration
@@ -60,6 +60,9 @@ public class GameEndpoint {
   // playerMap
   Map<String, Session> playerSessions = new ConcurrentHashMap<>();
 
+  @ConfigProperty(name="kafkaforpops")
+  boolean kafkaforpops;
+  
   // send the player's pops to Kafka topic
   @Inject @Stream("popstream")
   Emitter<String> popstream;
@@ -241,32 +244,34 @@ public class GameEndpoint {
   } // registerClient
 
   /*
-   With each balloon pop
+   With each balloon pop, send it to Kafka for async analysis
   */
-  public void score(JsonObject jsonMessage) {
-    LOG.info("POP: " + jsonMessage.toString());    
-    popstream.send(jsonMessage.toString());
+  public void score(JsonObject jsonMessage) {    
+    if (kafkaforpops) {
+      // LOG.info("POP: " + jsonMessage.toString());    
+      popstream.send(jsonMessage.toString());
+    }
   }
 
   /* 
-  Listen for bonus topic, bonuses have to be sent out to unique player 
+  Listen for bonus topic, bonuses should sent out the unique player 
   */
   @Incoming("bonusstream")
-  // public CompletionStage<Void> process(KafkaMessage<String,String> msg) {
-    public void process(String message) {
+  public CompletionStage<Void> process(KafkaMessage<String,GameBonus> msg) {
+  // public void process(String message) {
       
-      String msg = message;
-      LOG.info("\n!!!BONUSSTREAM!!! " + msg);
+      
+      LOG.info("\n!!!BONUSSTREAM!!! " + msg.getPayload().toString());
 
-      JsonReader jsonReader = Json.createReader(new StringReader(msg));
-      JsonObject jsonMessage = jsonReader.readObject();   
-      String achievement = jsonMessage.getString("achievement");
-      String playerId = jsonMessage.getString("playerId");
-      String description = jsonMessage.getString("description");
-      int bonus = jsonMessage.getInt("bonus");
+
+      String achievement = msg.getPayload().getAchievement();
 
       if (achievement != null && !achievement.trim().equals("")) {
+        String playerId = msg.getPayload().getPlayerId();
+        String description = msg.getPayload().getDescription();
+        int bonus = msg.getPayload().getBonus();
         LOG.info("!!! Achievement !!! " + achievement + " for: " + playerId + " value: " + bonus);
+        
         JsonArray achievements = Json.createArrayBuilder()
           .add(Json.createObjectBuilder()
           .add("type",achievement)
@@ -279,11 +284,14 @@ public class GameEndpoint {
           .build();
         
         LOG.info(allAcheivements.toString());
+        // In theory, the server could queue the achievements per player and send as one
+        // the client is prepared to receive several achievements in a batch
 
         sendOnePlayer(playerId, allAcheivements.toString());
         
       }
-      // return msg.ack();
+      
+     return msg.ack();
   }
 
   /*
@@ -425,8 +433,8 @@ public class GameEndpoint {
       "1.0", // size
       85, // opacity
       35, // speed
-      true, // snitch1
-      true, // snitch2
+      false, // snitch1
+      false, // snitch2
       easyPoints
     );    
     
