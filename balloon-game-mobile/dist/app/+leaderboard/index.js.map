@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["index.ts"],"names":[],"mappings":";AAAA,sCAAqC,yBAAyB,CAAC;AAAtD,4EAAsD","sourcesContent":["export { LeaderboardComponent } from './leaderboard.component';\n"]}
