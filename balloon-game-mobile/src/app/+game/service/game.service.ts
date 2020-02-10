@@ -46,8 +46,8 @@ export class GameService {
     gold: 'golden'
   };
   configuration: Object = {};
-  socketUrl: string = (environment.production) ? 'ws://gamebus-production.apps-test.redhatkeynote.com/game' : 'ws://localhost:8080/game';
-  // socketUrl: string = (environment.production) ? '' : 'ws://demo.burr.red:9001/game';
+  socketUrl: string = (environment.production) ? 'ws://gameserver-game.apps.gcp.burrsutter.dev/game' : 'ws://localhost:8080/game';
+  // socketUrl: string = (environment.production) ? '' : 'ws://gameserver-game.apps.gcp.burrsutter.dev/game';
   @Output() stateChange = new EventEmitter();
   @Output() configurationChange = new EventEmitter();
   @Output() achievementsChange = new EventEmitter();

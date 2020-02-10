@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: configservice
+  labels:
+    app: configservice
+spec:
+  ports:
+  - name: http
+    port: 8080
+  selector:
+    app: configservice
+  type: LoadBalancer
