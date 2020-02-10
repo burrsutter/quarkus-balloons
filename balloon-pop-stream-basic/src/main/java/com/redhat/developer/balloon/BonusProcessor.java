@@ -12,15 +12,13 @@ import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 @ApplicationScoped
 public class BonusProcessor {
 
-  // @Inject @Channel("bonusstream")
-  // Emitter<String> bonusstream;
     
   @Incoming("popstream")  
   @Outgoing("bonusstream")
   public Flowable<KafkaMessage<String, GameBonus>> applyBonus(Flowable<KafkaMessage<String, PopEvent>> msg) {
     return msg
       .filter(input -> accept(input))
-      .map(input -> calculateGameBonus(input))
+      .flatMap(input -> calculateGameBonus(input))
       .doOnError(e -> System.out.println(e));
   }  
 
@@ -51,7 +49,7 @@ public class BonusProcessor {
     return false;
   }
 
-  private KafkaMessage<String, GameBonus> calculateGameBonus(KafkaMessage<String,PopEvent> msg) {
+  private Flowable<KafkaMessage<String, GameBonus>> calculateGameBonus(KafkaMessage<String,PopEvent> msg) {
      
     GameBonus bonus = new GameBonus();  
     Integer consecutive = msg.getPayload().getConsecutive();
@@ -59,6 +57,22 @@ public class BonusProcessor {
     String playerName = msg.getPayload().getPlayerName();    
     String balloonType = msg.getPayload().getBalloonType();
     int score = msg.getPayload().getScore();
+
+    /*
+     The Game client can handle achievements of:
+     pops1
+     pops2
+     pops3
+     score1
+     score2
+     score3
+     golden
+     
+     These badges will appear to the end-user at GameOver
+     a particular player session can only receive one of each achievement
+     
+     https://github.com/burrsutter/quarkus-balloons/blob/master/balloon-game-mobile/src/app/%2Bgame/service/game.service.ts#L293
+    */
 
     if (consecutive >= 3  && consecutive < 5) {
        
@@ -143,24 +157,11 @@ public class BonusProcessor {
       bonus.setDescription("Ray Boss"); 
       
     }  
-   
-    return KafkaMessage.of("bonus",bonus);  
+    if (bonus.getAchievement() != null) {
+      return Flowable.just(KafkaMessage.of("bonus",bonus));
+    } else {
+      return Flowable.empty();
+    }    
   }
-
-/*  
-    if(balloonType.equals("balloon_red")) {      
-      playerBonusObject = Json.createObjectBuilder()
-      .add("playerId", playerId)
-      .add("playerName", playerName)
-      .add("achievement","score1")
-      .add("bonus",10)
-      .add("description","Red Bonus").build();  
-
-      // bonusstream.send(playerBonusObject.toString());
-    }
-*/ 
-
     
-  
-  
 }
