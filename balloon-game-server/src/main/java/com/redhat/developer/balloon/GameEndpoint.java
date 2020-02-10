@@ -29,13 +29,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
 import io.quarkus.scheduler.Scheduled;
-import io.smallrye.reactive.messaging.annotations.Emitter;
-import io.smallrye.reactive.messaging.annotations.Stream;
 import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 
 @ServerEndpoint("/game") // for the mobile game
@@ -65,8 +62,10 @@ public class GameEndpoint {
   boolean kafkaforpops;
   
   // send the player's pops to Kafka topic
+  /*
   @Inject @Stream("popstream")
   Emitter<String> popstream;
+  */
 
   String prevPolledResponse = "";
   int pollCnt = 0;
@@ -250,14 +249,14 @@ public class GameEndpoint {
   public void score(JsonObject jsonMessage) {    
     if (kafkaforpops) {
       // LOG.info("POP: " + jsonMessage.toString());    
-      popstream.send(jsonMessage.toString());
+      // popstream.send(jsonMessage.toString());
     }
   }
 
   /* 
   Listen for bonus topic, bonuses should sent out the unique player 
   */
-  @Incoming("bonusstream")
+  // @Incoming("bonusstream")
   public CompletionStage<Void> process(KafkaMessage<String,GameBonus> msg) {
   // public void process(String message) {
       
