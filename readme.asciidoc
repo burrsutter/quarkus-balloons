@@ -1,0 +1,78 @@
+Start the Game server
+----
+cd balloon-game-server
+mvn compile quarkus:dev
+----
+
+Note: it will complain about the missing Kafka broker
+and it will complain about the missing config service
+"Unable to invoke request: java.net.ConnectException: Connection refused (Connection refused)"
+
+
+Start the Game Client
+----
+cd balloon-game-mobile
+npm start
+----
+
+Open Game in browser 
+----
+open http://localhost:4200 
+----
+
+Start the game
+----
+curl localhost:8080/a/start
+curl localhost:8080/a/play
+----
+
+Pause & Play
+----
+curl localhost:8080/a/pause
+curl localhost:8080/a/play
+----
+
+Make it easy to play
+----
+curl localhost:8080/a/easy
+# or hard
+curl localhost:8080/a/hard
+----
+
+Gameover
+----
+curl localhost:8080/a/gameover
+----
+
+Optional:
+
+Update balloon-game-server's application.properties
+----
+kafkaforpops=true
+----
+
+Add Kafka broker for bonus analysis
+----
+docker-compose up
+----
+
+Start the Pop Stream analyzer (determines achievements & bonuses)
+----
+cd  balloon-pop-stream-basic
+mvn compile quarkus:dev
+----
+
+Monitor the Bonus stream
+----
+open http://localhost:8085/sse/bonusstream
+----
+
+Flow of events
+----
+Client pops -> Websocket -> balloon-game-server
+   -> Kafka popstream 
+   -> balloon-pop-stream-basic 
+   -> Kafka bonusstream (balloon-game-server)
+  <- achievenment sent back to client via Websocket
+----
+
