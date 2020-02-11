@@ -11,7 +11,7 @@ Build game client in its webserver
 cd balloon-game-mobile
 npm run build
 
-CLIENT_IMG_VER=1.0.1
+CLIENT_IMG_VER=1.0.2
 
 docker build  \
 -f Dockerfile \
