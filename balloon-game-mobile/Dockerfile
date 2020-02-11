@@ -1,5 +1,5 @@
 FROM bitnami/nginx
 
-COPY ./dist /usr/share/nginx/html
+COPY ./dist /opt/bitnami/nginx/html
 
 
