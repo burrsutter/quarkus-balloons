@@ -18,4 +18,4 @@ spec:
       - name: gameclient
         image: quay.io/burrsutter/balloon-game-client:1.0.1
         ports:
-          - containerPort: 8080
+          - containerPort: 80

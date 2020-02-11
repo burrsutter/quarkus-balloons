@@ -10,4 +10,4 @@ spec:
     port: 8080
   selector:
     app: configservice
-  type: LoadBalancer
+  type: ClusterIP

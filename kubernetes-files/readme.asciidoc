@@ -1,6 +1,12 @@
 == Game Client
 
-Deploy game client via webserver
+Create a namespace
+----
+kubectl create namespace game
+kubectl config set-context --current --namespace=game
+----
+
+Build game client in its webserver
 ----
 cd balloon-game-mobile
 npm run build
@@ -18,6 +24,12 @@ docker tag dev.local/burrsutter/balloon-game-client:$CLIENT_IMG_VER quay.io/burr
 
 docker push quay.io/burrsutter/balloon-game-client:$CLIENT_IMG_VER
 
+----
+
+Deploy game client
+----
+kubectl apply -f gameclient-deployment.yaml
+kubectl apply -f gameclient-service.yaml
 ----
 
 == Game Server
@@ -41,12 +53,6 @@ docker tag dev.local/burrsutter/balloon-game-server-jvm:$GS_IMG_VER quay.io/burr
 
 docker push quay.io/burrsutter/balloon-game-server-jvm:$GS_IMG_VER
 
-----
-
-Create a namespace
-----
-kubectl create namespace game
-kubectl config set-context --current --namespace=game
 ----
 
 
@@ -85,51 +91,48 @@ kubectl apply -f configuration-service.yaml
 ----
 
 
-Create a Public Route to Game Server
+Create a Public Route to Game Client and Server
 ----
 # using the OpenShift built-in Router
+oc expose service gameclient
 oc expose service gameserver
 ----
 
 ==== Optional
 Deploy Strimzi
 ----
-kubectl apply -f https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.16.2/strimzi-cluster-operator-0.16.2.yaml
+curl -L https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.16.2/strimzi-cluster-operator-0.16.2.yaml \
+  | sed 's/namespace: .*/namespace: game/' \
+  | kubectl apply -f - -n game
 ----
 
-Deploy Kafka Cluster
+and wait for the Operator
+----
+kubectl get pods -n game
+
+NAME                                        READY   STATUS    RESTARTS   AGE
+strimzi-cluster-operator-77555d4b69-hhxm9   1/1     Running   0          103s
+----
+
+Deploy a Kafka Cluster
 ----
 cat <<EOF | kubectl apply -f -
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1alpha1
 kind: Kafka
-metadata:
+metadata: 
   name: my-cluster
 spec:
   kafka:
     replicas: 3
     listeners:
-      plain: {}
-      tls: {}
       external:
-        type: loadbalancer
-        tls: false
-    config:
-      offsets.topic.replication.factor: 1
-      transaction.state.log.replication.factor: 1
-      transaction.state.log.min.isr: 1
+        type: route
     storage:
-      type: jbod
-      volumes:
-      - id: 0
-        type: persistent-claim
-        size: 100Gi
-        deleteClaim: false
+      type: ephemeral
   zookeeper:
     replicas: 3
     storage:
-      type: persistent-claim
-      size: 100Gi
-      deleteClaim: false
+      type: ephemeral
   entityOperator:
     topicOperator: {}
     userOperator: {}
