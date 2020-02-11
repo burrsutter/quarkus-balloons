@@ -1,0 +1,19 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: game-client
+  namespace: game
+  labels:
+    app: gameclient
+spec:
+  host: game-client-game.apps.gcp.burrsutter.dev
+  to:
+    kind: Service
+    name: gameclient
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow
+  wildcardPolicy: None
