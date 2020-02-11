@@ -7,6 +7,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -299,6 +300,7 @@ public class GameEndpoint {
   */
   @GET 
   @Path("/start")
+  @RolesAllowed({"admin"})
   public Response startGame() {
     LOG.info("start a new game");
     currentGameId=UUID.randomUUID().toString();
@@ -309,6 +311,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/play")
+  @RolesAllowed({"admin"})
   public Response playGame() {
     LOG.info(PLAY);    
     currentGameState=PLAY;
@@ -318,6 +321,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/pause")
+  @RolesAllowed({"admin"})
   public Response pauseGame() {
     LOG.info(PAUSE);
     currentGameState=PAUSE;
@@ -327,6 +331,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/gameover")
+  @RolesAllowed({"admin"})
   public Response gameOver() {
     LOG.info(GAMEOVER);
     currentGameState=GAMEOVER;

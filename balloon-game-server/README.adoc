@@ -1,0 +1,86 @@
+:sectnums:
+:experimental:
+
+= Baloon Game Server 
+
+Start Kafka broker
+
+docker-compose up 
+
+Start the Game Server
+
+mvn quarkus:dev
+
+Start the client
+
+npm start
+
+open http://localhost:4200/#/game
+
+
+[[gen-keys]]
+= Creating Private and Public Key
+
+== Create private key
+
+[source,bash,attributes="+quotes,macros+,+attribute"]
+----
+./bin/genPrivateKey.sh
+----
+
+== Extract public key
+
+[source,bash,attributes="+quotes,macros+,+attribute"]
+----
+./bin/genPublicKey.sh
+----
+
+== Convert to pkcs8 format
+
+[source,bash]
+----
+./bin/toPkcs8.sh
+----
+
+IMPORTANT: You should use only the `privkey` as your private key and not the `privkey.pem`
+
+== Running in dev mode 
+
+Copy the ./publickey to src/test/resources and set local env variable to point to that:
+
+[source,bash,attributes="+quotes,macros+,+attribute"]
+----
+cp ./publickey  src/test/resources
+export MP_JWT_VERIFY_PUBLICKEY_LOCATION="$(pwd)/src/test/resources/publickey"
+./mvnw compile quarkus:dev
+----
+
+=== Generate the JWT token
+
+[source,bash,attributes="+quotes,macros+,+attribute"]
+----
+mvn exec:java -Dexec.mainClass=com.redhat.developer.balloon.GenerateJwtToken -Dexec.classpathScope=test -Dexec.args="/Users/foo/privkey 3600" #1
+----
+
+<1> Set the `/Users/foo/privkey` to the private key generated in earlier <<gen-keys,step>>
+
+
+Copy the output of the above command on to a variable called `JWT_TOKEN`.
+
+=== Test API
+
+* As admin , should return *HTTP 200*
+
+[source,bash,attributes="+quotes,macros+,+attribute"]
+----
+curl -H "Authorization: Bearer $JWT_TOKEN" localhost:8080/a/play
+----
+
+* As normal user, should return *HTTP 401 UnAuthorized*
+
+[source,bash,attributes="+quotes,macros+,+attribute"]
+----
+curl localhost:8080/a/play
+----
+
+
