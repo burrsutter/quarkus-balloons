@@ -369,6 +369,14 @@ public class GameEndpoint {
   }
 
   @GET
+  @Path("/playercount")
+  public Response playercount(){
+    return Response.ok("Player Count: " + playerSessions.keySet().size()).build();
+  }
+
+
+
+  @GET
   @Path("/achieve")
   @Produces(MediaType.APPLICATION_JSON)
   public Response achievement(){
