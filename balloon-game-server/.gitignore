@@ -2,7 +2,7 @@
 .project
 .classpath
 .settings/
-bin/
+!bin/
 
 # IntelliJ
 .idea
@@ -33,3 +33,8 @@ pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 release.properties
+
+privkey.pem
+privkey
+publicKey
+publickey
