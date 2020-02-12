@@ -1,0 +1,12 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: configservice
+spec:
+  template:
+    spec:
+      containers:
+      - image: quay.io/burrsutter/configuration-service-q-jvm:1.0.0
+        env:
+        - name: QUARKUS_HTTP_PORT
+          value: '8080'

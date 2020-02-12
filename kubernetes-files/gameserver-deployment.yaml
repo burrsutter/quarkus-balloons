@@ -20,8 +20,21 @@ spec:
         ports:
           - containerPort: 8080
         env:
+        - name: MP_JWT_VERIFY_PUBLICKEY_LOCATION
+          value: /usr/app/publicKey 
         - name: CONFIGSERVICE_MP_REST_URL
           value: http://configservice:8080  
+        volumeMounts:
+            - name: public-key
+              mountPath: "/usr/app"
+              readOnly: true
+      volumes:
+        - name: public-key
+          secret:
+            secretName: jwt-public-key
+            items:
+              - key: publicKey
+                path: publicKey
         # resources:
         #   requests:
         #     memory: "300Mi"
