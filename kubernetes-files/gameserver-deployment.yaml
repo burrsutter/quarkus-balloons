@@ -16,14 +16,14 @@ spec:
     spec:
       containers:
       - name: gameserver
-        image: quay.io/burrsutter/balloon-game-server-jvm:1.0.1
+        image: quay.io/burrsutter/balloon-game-server-jvm:1.0.2
         ports:
           - containerPort: 8080
         env:
         - name: MP_JWT_VERIFY_PUBLICKEY_LOCATION
           value: /usr/app/publicKey 
         - name: CONFIGSERVICE_MP_REST_URL
-          value: http://configservice:8080  
+          value: http://configservice.game.svc.cluster.local:8080
         volumeMounts:
             - name: public-key
               mountPath: "/usr/app"

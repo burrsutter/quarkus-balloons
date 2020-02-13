@@ -9,9 +9,12 @@ kubectl config set-context --current --namespace=game
 Build game client in its webserver
 ----
 cd balloon-game-mobile
+
+# modify game.service.ts to map to the correct backend websocket
+
 npm run build
 
-CLIENT_IMG_VER=1.0.2
+CLIENT_IMG_VER=aws-1.0.0
 
 docker build  \
 -f Dockerfile \
@@ -28,18 +31,12 @@ docker push quay.io/burrsutter/balloon-game-client:$CLIENT_IMG_VER
 
 Deploy game client
 ----
+# modify deployment.yaml to point to correct image tag
 kubectl apply -f gameclient-deployment.yaml
 kubectl apply -f gameclient-service.yaml
 ----
 
 == Game Server
-
-Create Public Key Secret
-
-[source,bash]
-----
-kubectl create secret generic jwt-public-key --from-file=publicKey=<where you have publickey>
-----
 
 Build JVM-version of Game Server
 ----
@@ -47,7 +44,7 @@ cd balloon-game-server
 
 mvn clean compile package
 
-GS_IMG_VER=1.0.1
+GS_IMG_VER=1.0.2
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -62,12 +59,64 @@ docker push quay.io/burrsutter/balloon-game-server-jvm:$GS_IMG_VER
 
 ----
 
+Create Public Key Secret
+
+[source,bash]
+----
+cd balloon-game-server
+./bin/genPrivateKey.sh
+./bin/genPublicKey.sh
+./bin/toPkcs8.sh
+----
+The result will be 3 files in the balloon-game-server directory:
+
+----
+privkey.pem
+publickey
+privkey
+----
+
+----
+kubectl create secret generic jwt-public-key --from-file=publicKey
+----
+
+Generate the JWT
+----
+mvn exec:java -Dexec.mainClass=com.redhat.developer.balloon.GenerateJwtToken -Dexec.classpathScope=test -Dexec.args="/Users/burrsutter/projects/quarkus-balloons/balloon-game-server/privkey 3600"
+----
+
+Copy output to env variable:
+----
+export JWT_TOKEN=<generated token>
+----
 
 Deploy JVM-based Game Server
 ----
 kubectl apply -f gameserver-deployment.yaml
 kubectl apply -f gameserver-service.yaml
 ----
+
+Create a Public Route to Game Client and Server
+----
+# using the OpenShift built-in Router
+oc expose service gameclient
+oc expose service gameserver
+----
+
+----
+kubectl get routes
+NAME          HOST/PORT                                  PATH   SERVICES     PORT   TERMINATION   WILDCARD
+game-client   game-client-game.apps.aws.burrsutter.org          gameclient   http   edge/Allow    None
+gameserver    gameserver-game.apps.aws.burrsutter.org           gameserver   http   edge/Allow    None
+----
+
+----
+curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/start
+curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/play
+curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/easy
+curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/gameover
+----
+
 
 == Config Service
 
@@ -97,13 +146,6 @@ kubectl apply -f configuration-deployment.yaml
 kubectl apply -f configuration-service.yaml
 ----
 
-
-Create a Public Route to Game Client and Server
-----
-# using the OpenShift built-in Router
-oc expose service gameclient
-oc expose service gameserver
-----
 
 ==== Optional
 Deploy Strimzi
