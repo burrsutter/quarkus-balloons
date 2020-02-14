@@ -82,7 +82,7 @@ kubectl create secret generic jwt-public-key --from-file=publicKey
 
 Generate the JWT
 ----
-mvn exec:java -Dexec.mainClass=com.redhat.developer.balloon.GenerateJwtToken -Dexec.classpathScope=test -Dexec.args="/Users/burrsutter/projects/quarkus-balloons/balloon-game-server/privkey 3600"
+./bin/createJWT.sh
 ----
 
 Copy output to env variable:
@@ -96,11 +96,16 @@ kubectl apply -f gameserver-deployment.yaml
 kubectl apply -f gameserver-service.yaml
 ----
 
-Create a Public Route to Game Client and Server
+Create a AWS Public Route to Game Client and Server
 ----
-# using the OpenShift built-in Router
-oc expose service gameclient
-oc expose service gameserver
+kubectl apply -f gameclient-route.yaml
+kubectl apply -f gameserver-route.yaml
+----
+
+OR Create a GCP Public Route to Game Client and Server
+----
+kubectl apply -f gameclient-route-gcp.yaml
+kubectl apply -f gameserver-route-gcp.yaml
 ----
 
 ----
@@ -111,10 +116,19 @@ gameserver    gameserver-game.apps.aws.burrsutter.org           gameserver   htt
 ----
 
 ----
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/start
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/play
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/easy
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/gameover
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/start
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/play
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/pause
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/easy
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/gameover
+----
+
+----
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/start
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/play
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/pause
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/easy
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/gameover
 ----
 
 
@@ -144,6 +158,13 @@ Deploy JVM-based Quarkus Config Service
 ----
 kubectl apply -f configuration-deployment.yaml
 kubectl apply -f configuration-service.yaml
+----
+
+OR
+
+Deploy JVM-based Knative Quarkus Config Service
+----
+kubectl apply -f configuration-kn.yaml
 ----
 
 

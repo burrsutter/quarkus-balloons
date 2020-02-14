@@ -1,15 +1,15 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: game-client
+  name: gameserver
   namespace: game
   labels:
-    app: gameclient
+    app: gameserver
 spec:
-  host: game-client-game.apps.aws.burrsutter.org
+  host: gameserver-game.apps.gcp.burrsutter.dev
   to:
     kind: Service
-    name: gameclient
+    name: gameserver
     weight: 100
   port:
     targetPort: http
