@@ -10,7 +10,7 @@ spec:
       containers:
       - image: quay.io/burrsutter/configuration-service-sb:1.0.0
         env:
-        - name: QUARKUS_HTTP_PORT
+        - name: SERVER_PORT
           value: '8080'
   traffic:
   - tag: latest
