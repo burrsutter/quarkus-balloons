@@ -10,7 +10,7 @@ spec:
       name: configservice-q
     spec:
       containers:
-      - image: quay.io/burrsutter/configuration-service-q-jvm:1.0.0
+      - image: quay.io/burrsutter/configuration-service-q-jvm:1.0.3
         env:
         - name: QUARKUS_HTTP_PORT
           value: '8080'

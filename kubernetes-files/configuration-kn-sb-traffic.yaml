@@ -10,7 +10,7 @@ spec:
       name: configservice-sb
     spec:
       containers:
-      - image: quay.io/burrsutter/configuration-service-sb:1.0.0
+      - image: quay.io/burrsutter/configuration-service-sb:1.0.2
         env:
         - name: SERVER_PORT
           value: '8080'

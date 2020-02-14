@@ -44,7 +44,7 @@ cd balloon-game-server
 
 mvn clean compile package
 
-GS_IMG_VER=1.0.2
+GS_IMG_VER=1.0.3
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -139,7 +139,7 @@ cd configuration-service-q
 
 mvn clean compile package
 
-CS_IMG_VER=1.0.2
+CS_IMG_VER=1.0.3
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -170,11 +170,21 @@ mvn clean compile package
 
 mvn compile jib:build
 
+kubectl apply -f configuration-deployment-sb.yaml
 
 ----
 
 == Config Services Knative Serving
+----
+kubectl apply -f configuration-kn-sb-traffic.yaml
+# note: this first application seems to fail, so issue all 3 kubectl commands
 
+kubectl apply -f configuration-kn-q-traffic.yaml
+
+# when you wish to go back to SB
+
+kubectl apply -f configuration-kn-sb-traffic.yaml
+----
 
 
 ==== Optional
