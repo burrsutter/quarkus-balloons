@@ -1,0 +1,26 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: configservice
+  labels:
+    serving.knative.dev/visibility: "cluster-local"  
+spec:
+  template:
+    metadata:
+      name: configservice-q
+    spec:
+      containers:
+      - image: quay.io/burrsutter/configuration-service-q-jvm:1.0.0
+        env:
+        - name: QUARKUS_HTTP_PORT
+          value: '8080'
+  traffic:
+    - tag: current
+      revisionName: configservice-q
+      percent: 100
+    - tag: prev
+      revisionName: configservice-sb
+      percent: 0
+    - tag: latest
+      latestRevision: true
+      percent: 0

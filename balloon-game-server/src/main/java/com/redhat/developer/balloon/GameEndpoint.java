@@ -217,6 +217,13 @@ public class GameEndpoint {
 
     sendOnePlayer(playerId,idResponse.toString());
 
+
+    /* 
+    TODO: This needs to pick up the current, potentially overridden game config from the polled configservice
+    for now, just hacking around it with the resetting of the variable
+    */
+    prevPolledResponse = "";
+    
     RegistrationResponse configurationResponse = new RegistrationResponse(
       0, // initial score 
       teamNumber, 
@@ -226,7 +233,7 @@ public class GameEndpoint {
       currentGame);
 
     Jsonb jsonb = JsonbBuilder.create();
-    String stringConfigurationResponse = jsonb.toJson(configurationResponse);
+    String stringConfigurationResponse = jsonb.toJson(configurationResponse); 
 
     sendOnePlayer(playerId,stringConfigurationResponse);
     
@@ -383,6 +390,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/achieve")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response achievement(){
     // There can be multiple achievements so send them all to all players
@@ -432,6 +440,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/easy") 
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response easyconfig(){
 
@@ -459,6 +468,7 @@ public class GameEndpoint {
   }
   @GET
   @Path("/hard")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response hardconfig(){
     Points hardPoints = new Points(
@@ -486,7 +496,8 @@ public class GameEndpoint {
   
 
   @GET
-  @Path("/burr") 
+  @Path("/burr")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitch1() {
     
@@ -501,6 +512,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/ray")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitch2() {
     currentGame.setGoldenSnitch1(Boolean.FALSE);
@@ -514,6 +526,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/default")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response defaultConfig() {
     

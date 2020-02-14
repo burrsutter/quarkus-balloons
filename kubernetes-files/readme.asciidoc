@@ -132,14 +132,14 @@ curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutte
 ----
 
 
-== Config Service
+== Config Service Quarkus Vanilla Deployment
 
 ----
 cd configuration-service-q
 
 mvn clean compile package
 
-CS_IMG_VER=1.0.1
+CS_IMG_VER=1.0.2
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -156,16 +156,25 @@ docker push quay.io/burrsutter/configuration-service-q-jvm:$CS_IMG_VER
 
 Deploy JVM-based Quarkus Config Service
 ----
-kubectl apply -f configuration-deployment.yaml
+kubectl apply -f configuration-deployment-q.yaml
 kubectl apply -f configuration-service.yaml
 ----
 
-OR
+== Config Service Spring Boot Vanilla Deployment
+----
+cd configuration-service-sb
 
-Deploy JVM-based Knative Quarkus Config Service
+mvn clean compile package
+
+# edit pom.xml for version numbers
+
+mvn compile jib:build
+
+
 ----
-kubectl apply -f configuration-kn.yaml
-----
+
+== Config Services Knative Serving
+
 
 
 ==== Optional

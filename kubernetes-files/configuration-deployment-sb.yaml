@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: configservice
-  name: configservice
+  name: configservice-sb
 spec:
   replicas: 1
   selector:
@@ -16,9 +16,9 @@ spec:
     spec:
       containers:
       - name: configservice
-        image: quay.io/burrsutter/configuration-service-q-jvm:1.0.0
+        image: quay.io/burrsutter/configuration-service-sb:1.0.2
         ports:
           - containerPort: 8080
         env:
-        - name: QUARKUS_HTTP_PORT
+        - name: SERVER_PORT
           value: '8080'

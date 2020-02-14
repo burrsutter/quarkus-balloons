@@ -14,15 +14,13 @@ public class MyResource {
 
     Config myconfig = new Config(
       "burr", 
-      "green", 
+      "canary", 
       100,
-      //"1.1",
-      ".5",
+      "1.1",
       85, 
-      // 50,
-      75,
-      true, 
+      50,
       false, 
+      true, 
       points
     );
 
