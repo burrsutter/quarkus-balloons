@@ -19,8 +19,8 @@ public class MyResource {
       "1.1",
       85, 
       50,
-      false, 
       true, 
+      false, 
       points
     );
 

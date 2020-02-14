@@ -579,11 +579,20 @@ public class GameEndpoint {
       // only alert clients if the config has changed since previous poll
       if (!response.equals(prevPolledResponse)) {        
         
-        System.out.println("\n *** new response " + pollCnt++ + ":");
+        System.out.println("\n " + pollCnt++ + " NEW config :" + response);
         prevPolledResponse = response;
         
         Config convertedConfig = convertResponseStringToConfig(response);  
-        sendGameConfigUpdate(convertedConfig);
+        currentGame.setBackground(convertedConfig.getBackground());
+        // do NOT override currentGame.setGameId()
+        currentGame.setGoldenSnitch1(convertedConfig.isGoldenSnitch1()); 
+        currentGame.setGoldenSnitch2(convertedConfig.isGoldenSnitch2()); 
+        currentGame.setOpacity(convertedConfig.getOpacity());
+        currentGame.setPoints(convertedConfig.getPoints());
+        currentGame.setScale(convertedConfig.getScale());
+        currentGame.setSpeed(convertedConfig.getSpeed());
+
+        sendGameConfigUpdate(currentGame);
       }
 
     } catch (Exception ex) {
