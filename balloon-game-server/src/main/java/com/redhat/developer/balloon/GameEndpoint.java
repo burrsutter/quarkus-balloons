@@ -62,6 +62,9 @@ public class GameEndpoint {
   @ConfigProperty(name="kafkaforpops")
   boolean kafkaforpops;
   
+  @ConfigProperty(name="LOCATION_KEY")
+  String locationKey;
+
   // send the player's pops to Kafka topic
   /*
   @Inject @Stream("popstream")
@@ -189,16 +192,18 @@ public class GameEndpoint {
   } // sendOnePlayer
 
   /*
-    Mobile/Client/Game requests
+    Mobile/Client/Game requests - called at initial page load, refresh of browser
   */
   public void registerClient(JsonObject jsonMessage, Session session) {
+    
     // right now, always create a new playerId during registration    
     String playerId = UUID.randomUUID().toString();
     // and assigns a new generated user name
     String username = UserNameGenerator.generate();
     // and assigns a random team number
     int teamNumber = ThreadLocalRandom.current().nextInt(1, 5);
-    LOG.info("\n\nCreating:");
+    LOG.info("\nLOCATION_KEY: " + locationKey);
+    LOG.info("\nCreating:");
     LOG.info("username: " + username);
     LOG.info("playerId: " + playerId);  
     LOG.info("teamNumber: " + teamNumber);
@@ -209,6 +214,7 @@ public class GameEndpoint {
     client needs 3 messages initially: id, configuration, game state     
     */
 
+    // Send Player's ID
     JsonObject idResponse = Json.createObjectBuilder()
     .add("type","id")
     .add("id",playerId).build();
@@ -219,8 +225,9 @@ public class GameEndpoint {
 
 
     /* 
-    TODO: This needs to pick up the current, potentially overridden game config from the polled configservice
-    for now, just hacking around it with the resetting of the variable
+     Send Game Config
+     TODO: This needs to pick up the current, potentially overridden game config from the polled configservice
+     for now, just hacking around it with the resetting of the variable
     */
     prevPolledResponse = "";
     
@@ -229,8 +236,10 @@ public class GameEndpoint {
       teamNumber, 
       playerId, 
       username, 
-      "configuration", // type, 
-      currentGame);
+      "configuration", // type
+      currentGame, // the actual game config
+      locationKey  // AWS, AZR, GCP, etc
+      );
 
     Jsonb jsonb = JsonbBuilder.create();
     String stringConfigurationResponse = jsonb.toJson(configurationResponse); 
@@ -238,6 +247,8 @@ public class GameEndpoint {
     sendOnePlayer(playerId,stringConfigurationResponse);
     
     LOG.info("\n GAME-STATE: " + currentGameState + "\n");
+
+    // Send Game State
 
     if(currentGameState.equals(STARTGAME)) {
       sendOnePlayer(playerId,startGameMsg.toString());

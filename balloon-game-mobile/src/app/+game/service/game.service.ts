@@ -196,7 +196,7 @@ export class GameService {
 
   private onMessage(evt) {
     const data = JSON.parse(evt.data);
-    // console.log("onMessage: " + evt.data);
+    console.log("onMessage: " + evt.data);
 
     if (data.type === 'state') {
       console.log("onMessage: state=" + data.state);
@@ -254,6 +254,10 @@ export class GameService {
 
         localStorage.setItem(this._playerTeamKey, JSON.stringify(team));
         this.playerTeam = team;
+      }
+
+      if (data.locationKey) {
+        console.log("\n\n LOCATION: " + data.locationKey + "\n\n");
       }
 
       this.configuration = data.configuration;
