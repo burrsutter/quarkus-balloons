@@ -1,5 +1,16 @@
 # Red Hat Keynote Mobile Application
 
+## Versions
+```
+nvm use v8.16.0
+
+node -v
+v8.16.0
+
+npm -v
+6.4.1
+```
+
 ## Run locally
 First install
 ```
