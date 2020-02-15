@@ -131,6 +131,33 @@ curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutte
 curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/gameover
 ----
 
+== Config Service Default Vanilla Deployment
+----
+cd configuration-service-default
+
+mvn clean compile package
+
+CS_IMG_VER=1.0.3
+
+docker build  \
+-f src/main/docker/Dockerfile.jvm \
+-t dev.local/burrsutter/configuration-service-default:$CS_IMG_VER \
+.
+
+docker login quay.io
+
+docker tag dev.local/burrsutter/configuration-service-default:$CS_IMG_VER quay.io/burrsutter/configuration-service-default:$CS_IMG_VER
+
+docker push quay.io/burrsutter/configuration-service-default:$CS_IMG_VER
+
+----
+
+Deploy Default Config Service
+----
+kubectl apply -f configuration-deployment-default.yaml
+kubectl apply -f configuration-service.yaml
+----
+
 
 == Config Service Quarkus Vanilla Deployment
 

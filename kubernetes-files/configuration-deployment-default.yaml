@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: configservice
+  name: configservice-q
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configservice
+  template:
+    metadata:
+      labels:
+        app: configservice
+    spec:
+      containers:
+      - name: configservice
+        image: quay.io/burrsutter/configuration-service-default:1.0.3
+        ports:
+          - containerPort: 8080
+        env:
+        - name: QUARKUS_HTTP_PORT
+          value: '8080'
