@@ -137,7 +137,7 @@ cd configuration-service-default
 
 mvn clean compile package
 
-CS_IMG_VER=1.0.3
+CS_IMG_VER=1.0.4
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \

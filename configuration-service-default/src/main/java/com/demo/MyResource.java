@@ -17,8 +17,8 @@ public class MyResource {
       "default", 
       100,
       "0.6",
-      70, 
-      85,
+      85, 
+      70,
       false, 
       false, 
       points
