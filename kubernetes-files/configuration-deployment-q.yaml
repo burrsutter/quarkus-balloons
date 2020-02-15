@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: configservice
-        image: quay.io/burrsutter/configuration-service-q-jvm:1.0.2
+        image: quay.io/burrsutter/configuration-service-q-jvm:1.0.4
         ports:
           - containerPort: 8080
         env:

@@ -10,13 +10,13 @@
 	</parent>
 	<groupId>com.demo</groupId>
 	<artifactId>configuration-service</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.4</version>
 	<name>configuration-service</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
     <java.version>1.8</java.version>
-    <image.path>quay.io/burrsutter/configuration-service-sb:1.0.2</image.path>
+    <image.path>quay.io/burrsutter/configuration-service-sb:1.0.4</image.path>
 	</properties>
 
 	<dependencies>

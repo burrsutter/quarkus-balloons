@@ -7,16 +7,17 @@ metadata:
 spec:
   template:
     metadata:
-      name: configservice-q
+      name: configservice-default
       annotations:
-        autoscaling.knative.dev/minScale: "1"  
+        autoscaling.knative.dev/minScale: "1"         
     spec:
       containers:
-      - image: quay.io/burrsutter/configuration-service-q-jvm:1.0.4
+      - image: quay.io/burrsutter/configuration-service-default:1.0.3
         env:
         - name: QUARKUS_HTTP_PORT
           value: '8080'
   traffic:
     - tag: current
-      revisionName: configservice-q
+      revisionName: configservice-default
       percent: 100
+      

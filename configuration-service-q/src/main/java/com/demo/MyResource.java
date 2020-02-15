@@ -14,7 +14,7 @@ public class MyResource {
 
     Config myconfig = new Config(
       "burr", 
-      "canary", 
+      "green", 
       100,
       "1.1",
       85, 

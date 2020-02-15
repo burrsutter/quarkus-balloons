@@ -166,7 +166,7 @@ cd configuration-service-q
 
 mvn clean compile package
 
-CS_IMG_VER=1.0.3
+CS_IMG_VER=1.0.4
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -201,16 +201,22 @@ kubectl apply -f configuration-deployment-sb.yaml
 
 ----
 
-== Config Services Knative Serving
+== Config Services Knative Serving 
 ----
-kubectl apply -f configuration-kn-sb-traffic.yaml
-# note: this first application seems to fail, so issue all 3 kubectl commands
+# default config
+kubectl apply -f configuration-kn-default-traffic.yaml
 
+# now make it always Quarkus Burr
 kubectl apply -f configuration-kn-q-traffic.yaml
 
-# when you wish to go back to SB
-
+# when make it always SB Ray
 kubectl apply -f configuration-kn-sb-traffic.yaml
+
+# back to default
+kubectl apply -f configuration-kn-default-traffic.yaml
+
+# a lot of Ray, wee bit of Burr
+kubectl apply -f configuration-kn-split-traffic.yaml
 ----
 
 

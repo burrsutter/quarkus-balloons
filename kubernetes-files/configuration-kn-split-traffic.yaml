@@ -19,4 +19,7 @@ spec:
   traffic:
     - tag: current
       revisionName: configservice-sb
-      percent: 100
+      percent: 90
+    - tag: candidate
+      revisionName: configservice-q
+      percent: 10
