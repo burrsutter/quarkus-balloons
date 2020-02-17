@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: gameclient
-        image: quay.io/burrsutter/balloon-game-client:aws-1.0.0
+        image: quay.io/burrsutter/balloon-game-client:aws-1.0.1
         ports:
           - containerPort: 8080

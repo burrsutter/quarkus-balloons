@@ -14,7 +14,7 @@ cd balloon-game-mobile
 
 npm run build
 
-CLIENT_IMG_VER=aws-1.0.0
+CLIENT_IMG_VER=aws-1.0.1
 
 docker build  \
 -f Dockerfile \
@@ -44,7 +44,7 @@ cd balloon-game-server
 
 mvn clean compile package
 
-GS_IMG_VER=1.0.3
+GS_IMG_VER=1.0.4
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \

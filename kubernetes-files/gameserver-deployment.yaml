@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: gameserver
-        image: quay.io/burrsutter/balloon-game-server-jvm:1.0.3
+        image: quay.io/burrsutter/balloon-game-server-jvm:1.0.4
         ports:
           - containerPort: 8080
         env:

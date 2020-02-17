@@ -578,6 +578,12 @@ public class GameEndpoint {
     broadcast(stringJsonMsgType);
   }
 
+  // AWS aggressively timesout Websocket connections, so ping the users
+  @Scheduled(every="25s")
+  void heartbeat() {
+    broadcast("{\"type\" : \"heartbeat\"}");
+  }
+  
   @Scheduled(every="2s")
   void pollConfig() {
     // System.out.println("every 2 sec");

@@ -180,7 +180,7 @@ export class GameService {
       message['team'] = this.playerTeam.number;
     }
 
-    if (this.playerUsername) {
+    if (this.playerUsername) { 
       message['username'] = this.playerUsername;
     }
     // console.log("onOpen: " + JSON.stringify(message));
@@ -240,9 +240,17 @@ export class GameService {
 
     if (data.type === 'configuration') {
       console.log("onMessage: configuration=" + JSON.stringify(data.configuration));
-      if (data.username) {
+      // Burr
+      if (data.username) { 
+        console.log("\n\n PLAYER: " + data.username);
+
+        if (data.locationKey) {
+          console.log("\n\n LOCATION: " + data.locationKey + "\n\n");
+          data.username = data.username + " on " + data.locationKey;
+        }
+          
         localStorage.setItem(this._usernameKey, data.username);
-        this.playerUsername = data.username;
+        this.playerUsername = data.username;      
       }
 
       if (data.team) {
@@ -254,10 +262,6 @@ export class GameService {
 
         localStorage.setItem(this._playerTeamKey, JSON.stringify(team));
         this.playerTeam = team;
-      }
-
-      if (data.locationKey) {
-        console.log("\n\n LOCATION: " + data.locationKey + "\n\n");
       }
 
       this.configuration = data.configuration;
