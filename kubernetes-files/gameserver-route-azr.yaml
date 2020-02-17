@@ -1,0 +1,19 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: gameserver
+  namespace: game
+  labels:
+    app: gameserver
+spec:
+  host: gameserver-game.apps.azr.burrsutter.net
+  to:
+    kind: Service
+    name: gameserver
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow
+  wildcardPolicy: None
