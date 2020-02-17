@@ -14,7 +14,7 @@ cd balloon-game-mobile
 
 npm run build
 
-CLIENT_IMG_VER=aws-1.0.1
+CLIENT_IMG_VER=aws-1.0.2
 
 docker build  \
 -f Dockerfile \
@@ -64,9 +64,9 @@ Create Public Key Secret
 [source,bash]
 ----
 cd balloon-game-server
-./bin/genPrivateKey.sh
-./bin/genPublicKey.sh
-./bin/toPkcs8.sh
+./bin/1_genPrivateKey.sh
+./bin/2_genPublicKey.sh
+./bin/3_toPkcs8.sh
 ----
 The result will be 3 files in the balloon-game-server directory:
 
@@ -82,7 +82,7 @@ kubectl create secret generic jwt-public-key --from-file=publicKey
 
 Generate the JWT
 ----
-./bin/createJWT.sh
+./bin/5_createJWT.sh
 ----
 
 Copy output to env variable:
