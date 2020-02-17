@@ -15,6 +15,10 @@ cd balloon-game-mobile
 npm run build
 
 CLIENT_IMG_VER=aws-1.0.2
+# OR
+CLIENT_IMG_VER=gcp-1.0.2
+# OR
+CLIENT_IMG_VER=azr-1.0.2
 
 docker build  \
 -f Dockerfile \
@@ -76,6 +80,7 @@ publickey
 privkey
 ----
 
+Add the key to OpenShift/Kubernetes
 ----
 kubectl create secret generic jwt-public-key --from-file=publicKey
 ----
@@ -108,6 +113,13 @@ kubectl apply -f gameclient-route-gcp.yaml
 kubectl apply -f gameserver-route-gcp.yaml
 ----
 
+OR Create a AZR Public Route to Game Client and Server
+----
+kubectl apply -f gameclient-route-azr.yaml
+kubectl apply -f gameserver-route-azr.yaml
+----
+
+
 ----
 kubectl get routes
 NAME          HOST/PORT                                  PATH   SERVICES     PORT   TERMINATION   WILDCARD
@@ -130,6 +142,15 @@ curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutte
 curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/easy
 curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/gameover
 ----
+
+----
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.azr.burrsutter.net/a/start
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.azr.burrsutter.net/a/play
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/pause
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/easy
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/gameover
+----
+
 
 == Config Service Default Vanilla Deployment
 ----

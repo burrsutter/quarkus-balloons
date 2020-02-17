@@ -46,8 +46,9 @@ export class GameService {
     gold: 'golden'
   };
   configuration: Object = {};  
-  socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.aws.burrsutter.org/game' : 'ws://localhost:8080/game';
-  // socketUrl: string = (environment.production) ? '' : 'wss://gameserver-game.apps.gcp.burrsutter.dev/game';
+  // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.aws.burrsutter.org/game' : 'ws://localhost:8080/game';
+  // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.gcp.burrsutter.dev/game' : 'ws://localhost:8080/game';
+  socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.azr.burrsutter.net/game' : 'ws://localhost:8080/game';
   @Output() stateChange = new EventEmitter();
   @Output() configurationChange = new EventEmitter();
   @Output() achievementsChange = new EventEmitter();
