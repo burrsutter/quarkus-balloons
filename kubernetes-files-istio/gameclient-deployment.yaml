@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gameclient
+  name: gameclient
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gameclient
+  template:
+    metadata:
+      labels:
+        app: gameclient
+    spec:
+      containers:
+      - name: gameclient
+        image: gcr.io/devnexus-balloons/balloon-game-mobile
+        ports:
+          - containerPort: 8080
