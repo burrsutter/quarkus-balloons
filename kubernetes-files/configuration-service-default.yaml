@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: configservice
+  name: configservice-default
   labels:
-    app: configservice
+    app: configservice-default
 spec:
   ports:
   - name: http
     port: 8080
   selector:
-    app: configservice
+    app: configservice-default
   type: ClusterIP

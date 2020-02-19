@@ -9,17 +9,17 @@ import javax.ws.rs.core.MediaType;
 public class MyResource {
 
     Points points = new Points(
-      1, 1, 1, 1, 100, 1
+      1, 1, 1, 1, 50, 50
     );
 
     Config myconfig = new Config(
-      "burr", 
-      "green", 
+      "default", 
+      "default", 
       100,
-      "1.1",
+      "0.6",
       85, 
-      50,
-      true, 
+      70,
+      false, 
       false, 
       points
     );

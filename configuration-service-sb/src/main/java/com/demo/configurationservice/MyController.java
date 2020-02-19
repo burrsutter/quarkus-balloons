@@ -20,7 +20,7 @@ public class MyController {
 
       Config myconfig = new Config(
         "ray", 
-        "green", 
+        "blue", 
         100,
         "1.1",
         85, 

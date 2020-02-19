@@ -62,6 +62,9 @@ public class GameEndpoint {
   @ConfigProperty(name="kafkaforpops")
   boolean kafkaforpops;
   
+  @ConfigProperty(name="LOCATION_KEY")
+  String locationKey;
+
   // send the player's pops to Kafka topic
   /*
   @Inject @Stream("popstream")
@@ -189,16 +192,18 @@ public class GameEndpoint {
   } // sendOnePlayer
 
   /*
-    Mobile/Client/Game requests
+    Mobile/Client/Game requests - called at initial page load, refresh of browser
   */
   public void registerClient(JsonObject jsonMessage, Session session) {
+    
     // right now, always create a new playerId during registration    
     String playerId = UUID.randomUUID().toString();
     // and assigns a new generated user name
     String username = UserNameGenerator.generate();
     // and assigns a random team number
     int teamNumber = ThreadLocalRandom.current().nextInt(1, 5);
-    LOG.info("\n\nCreating:");
+    LOG.info("\nLOCATION_KEY: " + locationKey);
+    LOG.info("\nCreating:");
     LOG.info("username: " + username);
     LOG.info("playerId: " + playerId);  
     LOG.info("teamNumber: " + teamNumber);
@@ -209,6 +214,7 @@ public class GameEndpoint {
     client needs 3 messages initially: id, configuration, game state     
     */
 
+    // Send Player's ID
     JsonObject idResponse = Json.createObjectBuilder()
     .add("type","id")
     .add("id",playerId).build();
@@ -217,20 +223,32 @@ public class GameEndpoint {
 
     sendOnePlayer(playerId,idResponse.toString());
 
+
+    /* 
+     Send Game Config
+     TODO: This needs to pick up the current, potentially overridden game config from the polled configservice
+     for now, just hacking around it with the resetting of the variable
+    */
+    prevPolledResponse = "";
+    
     RegistrationResponse configurationResponse = new RegistrationResponse(
       0, // initial score 
       teamNumber, 
       playerId, 
       username, 
-      "configuration", // type, 
-      currentGame);
+      "configuration", // type
+      currentGame, // the actual game config
+      locationKey  // AWS, AZR, GCP, etc
+      );
 
     Jsonb jsonb = JsonbBuilder.create();
-    String stringConfigurationResponse = jsonb.toJson(configurationResponse);
+    String stringConfigurationResponse = jsonb.toJson(configurationResponse); 
 
     sendOnePlayer(playerId,stringConfigurationResponse);
     
     LOG.info("\n GAME-STATE: " + currentGameState + "\n");
+
+    // Send Game State
 
     if(currentGameState.equals(STARTGAME)) {
       sendOnePlayer(playerId,startGameMsg.toString());
@@ -383,6 +401,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/achieve")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response achievement(){
     // There can be multiple achievements so send them all to all players
@@ -432,6 +451,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/easy") 
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response easyconfig(){
 
@@ -459,6 +479,7 @@ public class GameEndpoint {
   }
   @GET
   @Path("/hard")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response hardconfig(){
     Points hardPoints = new Points(
@@ -486,7 +507,8 @@ public class GameEndpoint {
   
 
   @GET
-  @Path("/burr") 
+  @Path("/burr")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitch1() {
     
@@ -501,6 +523,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/ray")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitch2() {
     currentGame.setGoldenSnitch1(Boolean.FALSE);
@@ -514,6 +537,7 @@ public class GameEndpoint {
 
   @GET
   @Path("/default")
+  @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response defaultConfig() {
     
@@ -554,6 +578,12 @@ public class GameEndpoint {
     broadcast(stringJsonMsgType);
   }
 
+  // AWS aggressively timesout Websocket connections, so ping the users
+  @Scheduled(every="10s")
+  void heartbeat() {
+    broadcast("{\"type\" : \"heartbeat\"}");
+  }
+  
   @Scheduled(every="2s")
   void pollConfig() {
     // System.out.println("every 2 sec");
@@ -566,11 +596,20 @@ public class GameEndpoint {
       // only alert clients if the config has changed since previous poll
       if (!response.equals(prevPolledResponse)) {        
         
-        System.out.println("\n *** new response " + pollCnt++ + ":");
+        System.out.println("\n " + pollCnt++ + " NEW config :" + response);
         prevPolledResponse = response;
         
         Config convertedConfig = convertResponseStringToConfig(response);  
-        sendGameConfigUpdate(convertedConfig);
+        currentGame.setBackground(convertedConfig.getBackground());
+        // do NOT override currentGame.setGameId()
+        currentGame.setGoldenSnitch1(convertedConfig.isGoldenSnitch1()); 
+        currentGame.setGoldenSnitch2(convertedConfig.isGoldenSnitch2()); 
+        currentGame.setOpacity(convertedConfig.getOpacity());
+        currentGame.setPoints(convertedConfig.getPoints());
+        currentGame.setScale(convertedConfig.getScale());
+        currentGame.setSpeed(convertedConfig.getSpeed());
+
+        sendGameConfigUpdate(currentGame);
       }
 
     } catch (Exception ex) {

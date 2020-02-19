@@ -1,12 +1,12 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: gameserver2
+  name: gameserver
   namespace: game
   labels:
-    app: gameserver2
+    app: gameserver
 spec:
-  host: gameserver-game.apps.aws.burrsutter.org
+  host: gameserver-game.apps.gcp.burrsutter.dev
   to:
     kind: Service
     name: gameserver

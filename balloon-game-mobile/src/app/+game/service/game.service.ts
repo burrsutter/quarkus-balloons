@@ -47,8 +47,9 @@ export class GameService {
   };
   configuration: Object = {};  
   // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.aws.burrsutter.org/game' : 'ws://localhost:8080/game';
+  // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.gcp.burrsutter.dev/game' : 'ws://localhost:8080/game';
+  // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.azr.burrsutter.net/game' : 'ws://localhost:8080/game';
   socketUrl: string = ((window.location.protocol === "https:") ? 'wss://' : 'ws://') + window.location.host + '/game';
-  // socketUrl: string = (environment.production) ? '' : 'wss://gameserver-game.apps.gcp.burrsutter.dev/game';
   @Output() stateChange = new EventEmitter();
   @Output() configurationChange = new EventEmitter();
   @Output() achievementsChange = new EventEmitter();
@@ -181,7 +182,7 @@ export class GameService {
       message['team'] = this.playerTeam.number;
     }
 
-    if (this.playerUsername) {
+    if (this.playerUsername) { 
       message['username'] = this.playerUsername;
     }
     // console.log("onOpen: " + JSON.stringify(message));
@@ -197,7 +198,7 @@ export class GameService {
 
   private onMessage(evt) {
     const data = JSON.parse(evt.data);
-    // console.log("onMessage: " + evt.data);
+    console.log("onMessage: " + evt.data);
 
     if (data.type === 'state') {
       console.log("onMessage: state=" + data.state);
@@ -241,9 +242,17 @@ export class GameService {
 
     if (data.type === 'configuration') {
       console.log("onMessage: configuration=" + JSON.stringify(data.configuration));
-      if (data.username) {
+      // Burr
+      if (data.username) { 
+        console.log("\n\n PLAYER: " + data.username);
+
+        if (data.locationKey) {
+          console.log("\n\n LOCATION: " + data.locationKey + "\n\n");
+          data.username = data.username + " on " + data.locationKey;
+        }
+          
         localStorage.setItem(this._usernameKey, data.username);
-        this.playerUsername = data.username;
+        this.playerUsername = data.username;      
       }
 
       if (data.team) {

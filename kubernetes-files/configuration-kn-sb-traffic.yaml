@@ -1,0 +1,22 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: configservice
+  labels:
+    serving.knative.dev/visibility: "cluster-local"
+spec:
+  template:
+    metadata:
+      name: configservice-sb
+      annotations:
+        autoscaling.knative.dev/minScale: "1"  
+    spec:
+      containers:
+      - image: quay.io/burrsutter/configuration-service-sb:1.0.4
+        env:
+        - name: SERVER_PORT
+          value: '8080'
+  traffic:
+    - tag: current
+      revisionName: configservice-sb
+      percent: 100

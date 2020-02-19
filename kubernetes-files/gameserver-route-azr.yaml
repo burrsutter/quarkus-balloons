@@ -6,7 +6,7 @@ metadata:
   labels:
     app: gameserver2
 spec:
-  host: gameserver-game.apps.aws.burrsutter.org
+  host: gameserver-game.apps.azr.burrsutter.net
   to:
     kind: Service
     name: gameserver

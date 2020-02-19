@@ -14,7 +14,13 @@ cd balloon-game-mobile
 
 npm run build
 
-CLIENT_IMG_VER=aws-1.0.0
+CLIENT_IMG_VER=aws-1.0.2
+# OR
+CLIENT_IMG_VER=gcp-1.0.2
+# OR
+CLIENT_IMG_VER=azr-1.0.2
+# OR
+CLIENT_IMG_VER=1.0.3
 
 docker build  \
 -f Dockerfile \
@@ -44,7 +50,7 @@ cd balloon-game-server
 
 mvn clean compile package
 
-GS_IMG_VER=1.0.2
+GS_IMG_VER=1.0.5
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -64,9 +70,9 @@ Create Public Key Secret
 [source,bash]
 ----
 cd balloon-game-server
-./bin/genPrivateKey.sh
-./bin/genPublicKey.sh
-./bin/toPkcs8.sh
+./bin/1_genPrivateKey.sh
+./bin/2_genPublicKey.sh
+./bin/3_toPkcs8.sh
 ----
 The result will be 3 files in the balloon-game-server directory:
 
@@ -76,13 +82,14 @@ publickey
 privkey
 ----
 
+Add the key to OpenShift/Kubernetes
 ----
 kubectl create secret generic jwt-public-key --from-file=publicKey
 ----
 
 Generate the JWT
 ----
-mvn exec:java -Dexec.mainClass=com.redhat.developer.balloon.GenerateJwtToken -Dexec.classpathScope=test -Dexec.args="/Users/burrsutter/projects/quarkus-balloons/balloon-game-server/privkey 3600"
+./bin/5_createJWT.sh
 ----
 
 Copy output to env variable:
@@ -96,12 +103,24 @@ kubectl apply -f gameserver-deployment.yaml
 kubectl apply -f gameserver-service.yaml
 ----
 
-Create a Public Route to Game Client and Server
+Create a AWS Public Route to Game Client and Server
 ----
-# using the OpenShift built-in Router
-oc expose service gameclient
-oc expose service gameserver
+kubectl apply -f gameclient-route.yaml
+kubectl apply -f gameserver-route.yaml
 ----
+
+OR Create a GCP Public Route to Game Client and Server
+----
+kubectl apply -f gameclient-route-gcp.yaml
+kubectl apply -f gameserver-route-gcp.yaml
+----
+
+OR Create a AZR Public Route to Game Client and Server
+----
+kubectl apply -f gameclient-route-azr.yaml
+kubectl apply -f gameserver-route-azr.yaml
+----
+
 
 ----
 kubectl get routes
@@ -111,21 +130,66 @@ gameserver    gameserver-game.apps.aws.burrsutter.org           gameserver   htt
 ----
 
 ----
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/start
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/play
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/easy
-curl -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/gameover
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/start
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/play
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/pause
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/easy
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.aws.burrsutter.org/a/gameover
+----
+
+----
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/start
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/play
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/pause
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/easy
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/gameover
+----
+
+----
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.azr.burrsutter.net/a/start
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.azr.burrsutter.net/a/play
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/pause
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/easy
+curl -v -H "Authorization: Bearer $JWT_TOKEN" gameserver-game.apps.gcp.burrsutter.dev/a/gameover
 ----
 
 
-== Config Service
+== Config Service Default Vanilla Deployment
+----
+cd configuration-service-default
+
+mvn clean compile package
+
+CS_IMG_VER=1.0.4
+
+docker build  \
+-f src/main/docker/Dockerfile.jvm \
+-t dev.local/burrsutter/configuration-service-default:$CS_IMG_VER \
+.
+
+docker login quay.io
+
+docker tag dev.local/burrsutter/configuration-service-default:$CS_IMG_VER quay.io/burrsutter/configuration-service-default:$CS_IMG_VER
+
+docker push quay.io/burrsutter/configuration-service-default:$CS_IMG_VER
+
+----
+
+Deploy Default Config Service
+----
+kubectl apply -f configuration-deployment-default.yaml
+kubectl apply -f configuration-service.yaml
+----
+
+
+== Config Service Quarkus Vanilla Deployment
 
 ----
 cd configuration-service-q
 
 mvn clean compile package
 
-CS_IMG_VER=1.0.1
+CS_IMG_VER=1.0.4
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \
@@ -142,22 +206,72 @@ docker push quay.io/burrsutter/configuration-service-q-jvm:$CS_IMG_VER
 
 Deploy JVM-based Quarkus Config Service
 ----
-kubectl apply -f configuration-deployment.yaml
+kubectl apply -f configuration-deployment-q.yaml
 kubectl apply -f configuration-service.yaml
 ----
 
+== Config Service Spring Boot Vanilla Deployment
+----
+cd configuration-service-sb
 
-==== Optional
+mvn clean compile package
+
+# edit pom.xml for version numbers
+
+mvn compile jib:build
+
+kubectl apply -f configuration-deployment-sb.yaml
+
+----
+
+== Optional
+
+=== Knative Serving for Config
+
+----
+https://github.com/redhat-developer-demos/guru-night
+cd guru-night
+export CLOUD_PROFILE=AWS
+cp setenv.sh setenv-AWS.sh
+#  edit setenv-AWS.sh's KUBECONFIG setting
+./workshopper installCatalogSources
+./workshopper installKnativeServing
+
+watch kubectl get pods -n knative-serving
+----
+
+Config Services Knative Serving 
+----
+# default config
+kubectl apply -f configuration-kn-default-traffic.yaml
+
+# now make it always Quarkus Burr
+kubectl apply -f configuration-kn-q-traffic.yaml
+
+# when make it always SB Ray
+kubectl apply -f configuration-kn-sb-traffic.yaml
+
+# back to default
+kubectl apply -f configuration-kn-default-traffic.yaml
+
+# a lot of Ray, wee bit of Burr
+kubectl apply -f configuration-kn-split-traffic.yaml
+----
+
+
+=== Kafka for Bonus/Achievement
 Deploy Strimzi
 ----
+kubectl create namespace bonus
+
 curl -L https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.16.2/strimzi-cluster-operator-0.16.2.yaml \
-  | sed 's/namespace: .*/namespace: game/' \
-  | kubectl apply -f - -n game
+  | sed 's/namespace: .*/namespace: bonus/' \
+  | kubectl apply -f - -n bonus
 ----
 
 and wait for the Operator
 ----
-kubectl get pods -n game
+kubectl get pods -n bonus
 
 NAME                                        READY   STATUS    RESTARTS   AGE
 strimzi-cluster-operator-77555d4b69-hhxm9   1/1     Running   0          103s
@@ -165,7 +279,7 @@ strimzi-cluster-operator-77555d4b69-hhxm9   1/1     Running   0          103s
 
 Deploy a Kafka Cluster
 ----
-cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl -n bonus apply -f -
 apiVersion: kafka.strimzi.io/v1alpha1
 kind: Kafka
 metadata: 
@@ -190,4 +304,45 @@ EOF
 
 or
 
-kubectl -n game apply -f "https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/0.16.2/examples/kafka/kafka-persistent-single.yaml"
+kubectl -n bonus apply -f "https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/0.16.2/examples/kafka/kafka-persistent-single.yaml"
+
+or
+
+----
+cat <<EOF | kubectl -n bonus apply -f -
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata: 
+  name: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    listeners:
+      external:
+        type: route
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 3
+    storage:
+      type: persistent-claim
+      size: 100Gi
+      deleteClaim: true
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+EOF
+----
+
+=== Knative Eventing & Knative Kafka
+
+----
+./workshopper installKnativeEventing
+
+watch kubectl get pods -n knativeeventing
+----
+
+
+----
+./workshopper installKnativeKafka
+----

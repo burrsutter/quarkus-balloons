@@ -7,15 +7,17 @@ public class RegistrationResponse {
   private String username;
   private String type;
   private Config configuration;
+  private String locationKey;
 
   public RegistrationResponse(int score, int team, String playerId, String username, String type,
-  Config configuration) {
+  Config configuration, String locationKey) {
     this.score = score;
     this.team = team;
     this.playerId = playerId;
     this.username = username;
     this.type = type;
     this.configuration = configuration;
+    this.locationKey = locationKey;
   }
 
 
@@ -67,5 +69,12 @@ public class RegistrationResponse {
     this.configuration = configuration;
   }
 
+  public String getLocationKey() {
+    return locationKey;
+  }
+
+  public void setLocationKey(String locationKey) {
+    this.locationKey = locationKey;
+  }
 
 }

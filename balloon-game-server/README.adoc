@@ -59,7 +59,7 @@ export MP_JWT_VERIFY_PUBLICKEY_LOCATION="$(pwd)/src/test/resources/publickey"
 
 [source,bash,attributes="+quotes,macros+,+attribute"]
 ----
-mvn exec:java -Dexec.mainClass=com.redhat.developer.balloon.GenerateJwtToken -Dexec.classpathScope=test -Dexec.args="/Users/foo/privkey 3600" #1
+mvn exec:java -Dexec.mainClass=com.redhat.developer.balloon.GenerateJwtToken -Dexec.classpathScope=test -Dexec.args="/Users/burrsutter/projects/quarkus-balloons/balloon-game-server/privkey 36000" #1
 ----
 
 <1> Set the `/Users/foo/privkey` to the private key generated in earlier <<gen-keys,step>>
