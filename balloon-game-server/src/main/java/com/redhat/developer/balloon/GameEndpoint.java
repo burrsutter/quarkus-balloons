@@ -172,13 +172,31 @@ public class GameEndpoint {
   
   // broadcast a message to all connected clients
   public void broadcast(String message) {
-    sessions.values().forEach(session -> {
-      session.getAsyncRemote().sendObject(message, result ->  {
-          if (result.getException() != null) {
-              LOG.error("Unable to send message: " + result.getException());
-          }
-      });
+    sessions.keySet().forEach(sessionKey -> {
+       sessions.get(sessionKey).getAsyncRemote().sendObject(message, result -> {
+        if (result.getException() != null) {            
+          LOG.error("Unable to send message: " + result.getException());
+          LOG.error("Retrying");
+          sessions.get(sessionKey).getAsyncRemote().sendObject(message, result2 -> {
+            if (result2.getException() != null) {            
+              LOG.error("2nd failed send, removing: " + result2.getException());
+              sessions.remove(sessionKey);
+            }
+          });
+          // if unable to send, remove it
+          
+        }      
+       });
     });
+
+    // sessions.values().forEach(session -> {
+    //   session.getAsyncRemote().sendObject(message, result ->  {
+    //       if (result.getException() != null) {
+              
+    //           LOG.error("Unable to send message: " + result.getException());
+    //       }
+    //   });
+    // });
   } // broadcast
 
   // send a message to a single client
