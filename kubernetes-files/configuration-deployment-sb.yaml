@@ -2,17 +2,17 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: configservice
+    app: configservice-sb
   name: configservice-sb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: configservice
+      app: configservice-sb
   template:
     metadata:
       labels:
-        app: configservice
+        app: configservice-sb
     spec:
       containers:
       - name: configservice

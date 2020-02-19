@@ -19,6 +19,8 @@ CLIENT_IMG_VER=aws-1.0.2
 CLIENT_IMG_VER=gcp-1.0.2
 # OR
 CLIENT_IMG_VER=azr-1.0.2
+# OR
+CLIENT_IMG_VER=1.0.3
 
 docker build  \
 -f Dockerfile \
@@ -48,7 +50,7 @@ cd balloon-game-server
 
 mvn clean compile package
 
-GS_IMG_VER=1.0.4
+GS_IMG_VER=1.0.5
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \

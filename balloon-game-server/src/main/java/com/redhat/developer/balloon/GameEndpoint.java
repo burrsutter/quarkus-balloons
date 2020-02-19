@@ -579,7 +579,7 @@ public class GameEndpoint {
   }
 
   // AWS aggressively timesout Websocket connections, so ping the users
-  @Scheduled(every="25s")
+  @Scheduled(every="10s")
   void heartbeat() {
     broadcast("{\"type\" : \"heartbeat\"}");
   }

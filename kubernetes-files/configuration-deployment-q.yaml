@@ -2,17 +2,17 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: configservice
+    app: configservice-q
   name: configservice-q
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: configservice
+      app: configservice-q
   template:
     metadata:
       labels:
-        app: configservice
+        app: configservice-q
     spec:
       containers:
       - name: configservice
