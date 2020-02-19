@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gclb-ingress
+  namespace: istio-system
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: devnexus-rayt
+    networking.gke.io/managed-certificates: kubejava
+spec:
+  backend:
+    serviceName: istio-ingressgateway-np
+    servicePort: 80

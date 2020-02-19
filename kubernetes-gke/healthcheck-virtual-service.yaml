@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: healthcheck
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - game-gateway
+  http:
+  - match:
+    - headers:
+        user-agent:
+          prefix: GoogleHC
+      method:
+        exact: GET
+      uri:
+        exact: /
+    rewrite:
+      authority: istio-ingressgateway.istio-system.svc.cluster.local:15020
+      uri: /healthz/ready
+    route:
+    - destination:
+        host: istio-ingressgateway.istio-system.svc.cluster.local
+        port:
+          number: 15020
