@@ -1,29 +1,28 @@
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: configservice
   namespace: game
+  name: configservice-sb
   labels:
     app: configservice
-  annotations:
-    visualize: "true"
+    version: sb
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: configservice
+      version: sb
   template:
     metadata:
       labels:
         app: configservice
-      annotations:
-        visualize: "true"
+        version: sb
     spec:
       containers:
       - name: configservice
-        image: gcr.io/devnexus-balloons/configuration-service-q
+        image: quay.io/burrsutter/configuration-service-sb:1.0.4
         ports:
           - containerPort: 8080
         env:
-        - name: QUARKUS_HTTP_PORT
+        - name: SERVER_PORT
           value: '8080'
