@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: gameclient
-        image: gcr.io/devnexus-balloons/balloon-game-mobile
+        image: quay.io/burrsutter/balloon-game-client:1.0.3
         ports:
           - containerPort: 8080

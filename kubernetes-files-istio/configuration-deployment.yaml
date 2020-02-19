@@ -4,6 +4,8 @@ metadata:
   labels:
     app: configservice
   name: configservice
+  annotations:
+    visualize: "true"
 spec:
   replicas: 1
   selector:
@@ -13,6 +15,8 @@ spec:
     metadata:
       labels:
         app: configservice
+      annotations:
+        visualize: "true"
     spec:
       containers:
       - name: configservice
