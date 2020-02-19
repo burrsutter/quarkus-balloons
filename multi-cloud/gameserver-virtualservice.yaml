@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gameserver
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - game-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /game
+    route:
+    - destination:
+        host: gameserver
+      weight: 100
+    - destination:
+        host: aws-gameclient.default.svc.cluster.local
+      weight: 0
+    - destination:
+        host: game-client-game.apps.azr.burrsutter.net
+      weight: 0
+
