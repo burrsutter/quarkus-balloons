@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: game
+  name: configservice-default
+  labels:
+    app: configservice
+    version: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configservice
+      version: default
+  template:
+    metadata:
+      labels:
+        app: configservice
+        version: default
+    spec:
+      containers:
+      - name: configservice
+        image: quay.io/burrsutter/configuration-service-default:1.0.3
+        ports:
+          - containerPort: 8080
+        env:
+        - name: QUARKUS_HTTP_PORT
+          value: '8080'

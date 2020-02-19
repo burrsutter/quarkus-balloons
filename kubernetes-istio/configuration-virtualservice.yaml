@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  namespace: game
+  name: configservice
+spec:
+  host: configservice
+  subsets:
+  - name: default
+    labels:
+      version: default
+  - name: sb
+    labels:
+      version: sb
+  - name: q
+    labels:
+      version: q
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  namespace: game
+  name: configservice
+spec:
+  hosts:
+  - configservice
+  http:
+  - route:
+    - destination:
+        host: configservice
+        subset: default
+      weight: 100
+
