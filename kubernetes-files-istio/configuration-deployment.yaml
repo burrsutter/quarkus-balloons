@@ -1,9 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: configservice
+  namespace: game
   labels:
     app: configservice
-  name: configservice
   annotations:
     visualize: "true"
 spec:

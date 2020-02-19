@@ -14,11 +14,16 @@ spec:
     route:
     - destination:
         host: gameserver
-      weight: 100
+      weight: 34
     - destination:
-        host: aws-gameclient.default.svc.cluster.local
-      weight: 0
+        host: game-client-game.apps.aws.burrsutter.org
+      weight: 33
     - destination:
         host: game-client-game.apps.azr.burrsutter.net
-      weight: 0
-
+      weight: 33
+  - match:
+    - uri:
+        prefix: /a/
+    route:
+    - destination:
+        host: gameserver

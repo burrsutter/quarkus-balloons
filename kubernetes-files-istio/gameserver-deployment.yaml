@@ -1,9 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: game
+  name: gameserver
   labels:
     app: gameserver
-  name: gameserver
 spec:
   replicas: 1
   selector:
