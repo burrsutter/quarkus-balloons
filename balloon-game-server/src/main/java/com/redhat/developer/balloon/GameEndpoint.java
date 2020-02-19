@@ -554,6 +554,22 @@ public class GameEndpoint {
   }  
 
   @GET
+  @Path("/both")
+  @RolesAllowed({"admin"})
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response goldenSnitchBoth() {
+    
+    currentGame.setGoldenSnitch1(Boolean.TRUE);
+    currentGame.setGoldenSnitch2(Boolean.TRUE);
+    currentGame.setBackground("canary");
+
+    sendGameConfigUpdate(currentGame);
+
+    return Response.ok(currentGame).status(200).build();
+  }
+
+
+  @GET
   @Path("/default")
   @RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
