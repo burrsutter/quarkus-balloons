@@ -17,6 +17,6 @@ spec:
         - name: QUARKUS_HTTP_PORT
           value: '8080'
   traffic:
-    - tag: current
+    - tag: v-quarkus
       revisionName: configservice-q
       percent: 100

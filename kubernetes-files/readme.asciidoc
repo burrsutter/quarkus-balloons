@@ -50,7 +50,7 @@ cd balloon-game-server
 
 mvn clean compile package
 
-GS_IMG_VER=1.0.5
+GS_IMG_VER=1.0.7
 
 docker build  \
 -f src/main/docker/Dockerfile.jvm \

@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: gameserver
-        image: quay.io/burrsutter/balloon-game-server-jvm:1.0.5
+        image: quay.io/burrsutter/balloon-game-server-jvm:1.0.7
         ports:
           - containerPort: 8080
         env:
@@ -32,11 +32,11 @@ spec:
               readOnly: true
         resources:
           requests:
-            memory: "500Mi"
+            memory: "2000Mi"
             cpu: "1000m" # 1 core
           limits:
-            memory: "500Mi"
-            cpu: "1000m" # 1 core              
+            memory: "2000Mi"
+            cpu: "1000m" # 1 core         
       volumes:
         - name: public-key
           secret:
